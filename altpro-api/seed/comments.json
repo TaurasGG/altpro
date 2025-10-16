@@ -1,0 +1,4 @@
+[
+  { "taskId": "TASK_ID_PLACEHOLDER", "author": "user2", "text": "Please add mobile-first design", "createdAt": {"$date": "2025-10-02T10:05:00Z"} },
+  { "taskId": "TASK_ID_PLACEHOLDER", "author": "user1", "text": "Working on it", "createdAt": {"$date": "2025-10-03T11:00:00Z"} }
+]

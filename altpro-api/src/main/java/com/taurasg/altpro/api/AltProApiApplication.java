@@ -4,10 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class AltproApiApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(AltproApiApplication.class, args);
+public class AltProApiApplication {
+	static void main(String[] args) {
+		SpringApplication.run(AltProApiApplication.class, args);
 	}
-
 }

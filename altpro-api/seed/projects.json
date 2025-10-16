@@ -1,0 +1,4 @@
+[
+  { "name": "Website revamp", "description": "Revamp marketing website", "createdAt": {"$date": "2025-10-01T10:00:00Z"}, "members": ["user1","user2"] },
+  { "name": "Mobile app MVP", "description": "Mobile app first version", "createdAt": {"$date": "2025-09-20T08:00:00Z"}, "members": ["user2","user3"] }
+]

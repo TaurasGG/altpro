@@ -1,0 +1,4 @@
+[
+  { "projectId": "PROJECT_ID_PLACEHOLDER", "title": "Design landing", "description": "Create hero and CTA", "status": "TODO", "priority": 2, "createdAt": {"$date": "2025-10-02T09:00:00Z"}, "assignee": "user1" },
+  { "projectId": "PROJECT_ID_PLACEHOLDER", "title": "Implement API", "description": "Backend endpoints", "status": "IN_PROGRESS", "priority": 1, "createdAt": {"$date": "2025-10-03T09:00:00Z"}, "assignee": "user2" }
+]

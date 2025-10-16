@@ -1,0 +1,201 @@
+openapi: 3.0.3
+info:
+  title: AltPro API
+  version: '1.0'
+paths:
+  /api/projects:
+    post:
+      summary: Create project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+      responses:
+        '201':
+          description: Created
+    get:
+      summary: List projects
+      responses:
+        '200':
+          description: OK
+  /api/projects/{id}:
+    get:
+      summary: Get project by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200': { description: OK }
+        '404': { description: Not Found }
+    put:
+      summary: Update project
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Delete project
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204': { description: No Content }
+  /api/tasks:
+    post:
+      summary: Create task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '201': { description: Created }
+    get:
+      summary: List tasks
+      responses:
+        '200': { description: OK }
+  /api/tasks/{id}:
+    get:
+      summary: Get task by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200': { description: OK }
+        '404': { description: Not Found }
+    put:
+      summary: Update task
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Delete task
+      responses:
+        '200': { description: OK }
+  /api/tasks/project/{projectId}:
+    get:
+      summary: List tasks by project
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200': { description: OK }
+  /api/comments:
+    post:
+      summary: Create comment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+      responses:
+        '201': { description: Created }
+    get:
+      summary: List comments
+      responses:
+        '200': { description: OK }
+  /api/comments/{id}:
+    get:
+      summary: Get comment by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200': { description: OK }
+        '404': { description: Not Found }
+    put:
+      summary: Update comment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Delete comment
+      responses:
+        '204': { description: No Content }
+  /api/comments/task/{taskId}:
+    get:
+      summary: List comments by task
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200': { description: OK }
+components:
+  schemas:
+    Project:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        createdAt: { type: string, format: date-time }
+        members:
+          type: array
+          items: { type: string }
+    Task:
+      type: object
+      properties:
+        id: { type: string }
+        projectId: { type: string }
+        title: { type: string }
+        description: { type: string }
+        status: { type: string, enum: [TODO, IN_PROGRESS, DONE] }
+        priority: { type: integer }
+        createdAt: { type: string, format: date-time }
+        assignee: { type: string }
+    Comment:
+      type: object
+      properties:
+        id: { type: string }
+        taskId: { type: string }
+        author: { type: string }
+        text: { type: string }
+        createdAt: { type: string, format: date-time }
