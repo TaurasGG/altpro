@@ -67,13 +67,38 @@ public class TaskService {
 
     // List by project: any member of the project can view tasks
     public List<Task> listByProjectForUser(String projectId, String email) {
-        if (!isMember(projectId, email)) {
-            throw new NotFoundException("Project not found: " + projectId);
+        var project = projectRepo.findById(projectId)
+                .orElseThrow(() -> new NotFoundException("Project not found: " + projectId));
+
+        if (project.getMembers() == null || !project.getMembers().contains(email)) {
+            throw new NotFoundException("Not a member of project: " + projectId);
         }
-        return taskRepo.findByProjectId(projectId);
+
+        return taskRepo.findByProjectId(projectId); // grąžina visas užduotis projekto nariams
     }
 
     // Admin and helpers
+    public List<Task> listAll() {
+        return taskRepo.findAll();
+    }
+
+    public Task update(String id, Task t) {
+        Task existing = getById(id);
+        existing.setProjectId(t.getProjectId());
+        existing.setTitle(t.getTitle());
+        existing.setDescription(t.getDescription());
+        existing.setStatus(t.getStatus());
+        existing.setPriority(t.getPriority());
+        existing.setAssignee(t.getAssignee());
+        // keep original createdAt
+        return taskRepo.save(existing);
+    }
+
+    public void delete(String id) {
+        if (!taskRepo.existsById(id)) throw new NotFoundException("Task not found: " + id);
+        taskRepo.deleteById(id);
+    }
+
     public Task getById(String id) {
         return taskRepo.findById(id).orElseThrow(() -> new NotFoundException("Task not found: " + id));
     }

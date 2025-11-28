@@ -24,9 +24,8 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/health", "/actuator/health").permitAll()
+                        .requestMatchers("/health").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter())));
@@ -34,25 +33,18 @@ public class SecurityConfig {
     }
 
     private JwtAuthenticationConverter jwtAuthConverter() {
-        // Map scopes -> SCOPE_*
         var scopes = new JwtGrantedAuthoritiesConverter();
         scopes.setAuthorityPrefix("SCOPE_");
         scopes.setAuthoritiesClaimName("scope");
 
-        // Map roles claim -> ROLE_*
         var converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter((Jwt jwt) -> {
-            Collection<GrantedAuthority> scopeAuthorities = scopes.convert(jwt);
-
-            List<GrantedAuthority> roleAuthorities = jwt.getClaimAsStringList("roles") == null ? List.of() :
-                    jwt.getClaimAsStringList("roles").stream()
-                            .map(r -> (GrantedAuthority) () -> "ROLE_" + r)
-                            .toList();
-
-            return Stream.concat(scopeAuthorities.stream(), roleAuthorities.stream())
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            var scopeAuthorities = scopes.convert(jwt);
+            var roleAuthorities = jwt.getClaimAsStringList("roles").stream()
+                    .map(r -> (GrantedAuthority) () -> "ROLE_" + r)
                     .toList();
+            return Stream.concat(scopeAuthorities.stream(), roleAuthorities.stream()).toList();
         });
-
         return converter;
     }
 }
