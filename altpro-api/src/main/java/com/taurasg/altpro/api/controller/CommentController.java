@@ -5,6 +5,9 @@ import com.taurasg.altpro.api.service.CommentService;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,22 +18,67 @@ public class CommentController {
     private final CommentService service;
     public CommentController(CommentService service) { this.service = service; }
 
+    // --- USER ENDPOINTS ---
+    @PreAuthorize("hasAuthority('SCOPE_api.write')")
     @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<Comment> create(@Valid @RequestBody Comment c) { return ResponseEntity.status(201).body(service.create(c)); }
+    public ResponseEntity<Comment> create(@Valid @RequestBody Comment c, @AuthenticationPrincipal Jwt jwt) {
+        String email = jwt.getSubject();
+        return ResponseEntity.status(201).body(service.createForUser(c, email));
+    }
 
-    @GetMapping(value = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<Comment> getById(@PathVariable String id) { return ResponseEntity.ok(service.getById(id)); }
+    @PreAuthorize("hasAuthority('SCOPE_api.read')")
+    @GetMapping("/{id}")
+    public ResponseEntity<Comment> getById(@PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
+        String email = jwt.getSubject();
+        return ResponseEntity.ok(service.getByIdForUser(id, email));
+    }
 
-    @PutMapping(value = "/{id}")
-    public ResponseEntity<Comment> update(@PathVariable String id, @Valid @RequestBody Comment c) { return ResponseEntity.ok(service.update(id, c)); }
+    @PreAuthorize("hasAuthority('SCOPE_api.write')")
+    @PutMapping("/{id}")
+    public ResponseEntity<Comment> update(@PathVariable String id, @Valid @RequestBody Comment c, @AuthenticationPrincipal Jwt jwt) {
+        String email = jwt.getSubject();
+        return ResponseEntity.ok(service.updateForUser(id, c, email));
+    }
 
+    @PreAuthorize("hasAuthority('SCOPE_api.write')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) { service.delete(id); return ResponseEntity.noContent().build(); }
+    public ResponseEntity<Void> delete(@PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
+        String email = jwt.getSubject();
+        service.deleteForUser(id, email);
+        return ResponseEntity.noContent().build();
+    }
 
-    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<List<Comment>> listAll() { return ResponseEntity.ok(service.listAll()); }
+    @PreAuthorize("hasAuthority('SCOPE_api.read')")
+    @GetMapping
+    public ResponseEntity<List<Comment>> listAll(@AuthenticationPrincipal Jwt jwt) {
+        String email = jwt.getSubject();
+        return ResponseEntity.ok(service.listAllForUser(email));
+    }
 
-    // Hierarchinis: comments by task id
-    @GetMapping(value = "/task/{taskId}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<List<Comment>> listByTask(@PathVariable String taskId) { return ResponseEntity.ok(service.listByTask(taskId)); }
+    @PreAuthorize("hasAuthority('SCOPE_api.read')")
+    @GetMapping("/task/{taskId}")
+    public ResponseEntity<List<Comment>> listByTask(@PathVariable String taskId, @AuthenticationPrincipal Jwt jwt) {
+        String email = jwt.getSubject();
+        return ResponseEntity.ok(service.listByTaskForUser(taskId, email));
+    }
+
+    // --- ADMIN ENDPOINTS ---
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/all")
+    public ResponseEntity<List<Comment>> adminListAll() {
+        return ResponseEntity.ok(service.listAll());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/admin/{id}")
+    public ResponseEntity<Void> adminDelete(@PathVariable String id) {
+        service.adminDelete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/{id}")
+    public ResponseEntity<Comment> adminUpdate(@PathVariable String id, @Valid @RequestBody Comment c) {
+        return ResponseEntity.ok(service.adminUpdate(id, c));
+    }
 }

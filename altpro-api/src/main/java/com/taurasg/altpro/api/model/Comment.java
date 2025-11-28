@@ -20,6 +20,7 @@ public class Comment {
     @NotBlank(message = "taskId is required")
     private String taskId;
 
+    // This will be set from JWT subject
     private String author;
 
     @NotBlank(message = "text is required")

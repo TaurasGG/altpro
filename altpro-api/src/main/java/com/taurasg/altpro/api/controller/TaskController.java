@@ -5,6 +5,9 @@ import com.taurasg.altpro.api.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,25 +18,68 @@ public class TaskController {
     private final TaskService service;
     public TaskController(TaskService service) { this.service = service; }
 
+    // --- USER ENDPOINTS ---
+    @PreAuthorize("hasAuthority('SCOPE_api.write')")
     @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<Task> create(@Valid @RequestBody Task t) {
-        Task saved = service.create(t);
+    public ResponseEntity<Task> create(@Valid @RequestBody Task t, @AuthenticationPrincipal Jwt jwt) {
+        String email = jwt.getSubject();
+        Task saved = service.createForUser(t, email);
         return ResponseEntity.status(201).body(saved);
     }
 
-    @GetMapping(value = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<Task> getById(@PathVariable String id) { return ResponseEntity.ok(service.getById(id)); }
+    @PreAuthorize("hasAuthority('SCOPE_api.read')")
+    @GetMapping("/{id}")
+    public ResponseEntity<Task> getById(@PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
+        String email = jwt.getSubject();
+        return ResponseEntity.ok(service.getByIdForUser(id, email));
+    }
 
-    @PutMapping(value = "/{id}")
-    public ResponseEntity<Task> update(@PathVariable String id, @Valid @RequestBody Task t) { return ResponseEntity.ok(service.update(id, t)); }
+    @PreAuthorize("hasAuthority('SCOPE_api.write')")
+    @PutMapping("/{id}")
+    public ResponseEntity<Task> update(@PathVariable String id, @Valid @RequestBody Task t, @AuthenticationPrincipal Jwt jwt) {
+        String email = jwt.getSubject();
+        return ResponseEntity.ok(service.updateForUser(id, t, email));
+    }
 
+    @PreAuthorize("hasAuthority('SCOPE_api.write')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) { service.delete(id); return ResponseEntity.ok().build(); }
+    public ResponseEntity<Void> delete(@PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
+        String email = jwt.getSubject();
+        service.deleteForUser(id, email);
+        return ResponseEntity.noContent().build();
+    }
 
-    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<List<Task>> listAll() { return ResponseEntity.ok(service.listAll()); }
+    @PreAuthorize("hasAuthority('SCOPE_api.read')")
+    @GetMapping
+    public ResponseEntity<List<Task>> listAll(@AuthenticationPrincipal Jwt jwt) {
+        String email = jwt.getSubject();
+        return ResponseEntity.ok(service.listAllForUser(email));
+    }
 
-    // Hierarchinis endpoint'as: tasks by project
-    @GetMapping(value = "/project/{projectId}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<List<Task>> listByProject(@PathVariable String projectId) { return ResponseEntity.ok(service.listByProject(projectId)); }
+    @PreAuthorize("hasAuthority('SCOPE_api.read')")
+    @GetMapping("/project/{projectId}")
+    public ResponseEntity<List<Task>> listByProject(@PathVariable String projectId, @AuthenticationPrincipal Jwt jwt) {
+        String email = jwt.getSubject();
+        return ResponseEntity.ok(service.listByProjectForUser(projectId, email));
+    }
+
+    // --- ADMIN ENDPOINTS ---
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/all")
+    public ResponseEntity<List<Task>> adminListAll() {
+        return ResponseEntity.ok(service.listAll());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/admin/{id}")
+    public ResponseEntity<Void> adminDelete(@PathVariable String id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/{id}")
+    public ResponseEntity<Task> adminUpdate(@PathVariable String id, @Valid @RequestBody Task t) {
+        return ResponseEntity.ok(service.update(id, t));
+    }
 }
