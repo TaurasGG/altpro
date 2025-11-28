@@ -2,6 +2,7 @@ package com.taurasg.altpro.api.service;
 
 import com.taurasg.altpro.api.exception.NotFoundException;
 import com.taurasg.altpro.api.model.Task;
+import com.taurasg.altpro.api.repository.ProjectRepository;
 import com.taurasg.altpro.api.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 
@@ -10,28 +11,32 @@ import java.util.List;
 
 @Service
 public class TaskService {
-    private final TaskRepository repo;
+    private final TaskRepository taskRepo;
+    private final ProjectRepository projectRepo; // add
 
-    public TaskService(TaskRepository repo) {
-        this.repo = repo;
+    public TaskService(TaskRepository taskRepo, ProjectRepository projectRepo) {
+        this.taskRepo = taskRepo;
+        this.projectRepo = projectRepo;
     }
 
-    // --- USER METHODS ---
+    // Create: assignee = creator
     public Task createForUser(Task t, String email) {
         t.setId(null);
         t.setCreatedAt(Instant.now());
-        t.setAssignee(email); // assign to creator by default
-        return repo.save(t);
+        t.setAssignee(email);
+        return taskRepo.save(t);
     }
 
+    // Read: allow if user is member of the task's project
     public Task getByIdForUser(String id, String email) {
         Task task = getById(id);
-        if (!email.equals(task.getAssignee())) {
+        if (!isMember(task.getProjectId(), email)) {
             throw new NotFoundException("Task not found: " + id);
         }
         return task;
     }
 
+    // Update: only assignee
     public Task updateForUser(String id, Task update, String email) {
         Task existing = getById(id);
         if (!email.equals(existing.getAssignee())) {
@@ -41,59 +46,42 @@ public class TaskService {
         existing.setDescription(update.getDescription());
         existing.setStatus(update.getStatus());
         existing.setPriority(update.getPriority());
-        return repo.save(existing);
+        return taskRepo.save(existing);
     }
 
+    // Delete: only assignee
     public void deleteForUser(String id, String email) {
         Task existing = getById(id);
         if (!email.equals(existing.getAssignee())) {
             throw new NotFoundException("Task not found: " + id);
         }
-        repo.delete(existing);
+        taskRepo.delete(existing);
     }
 
+    // List all: tasks where user is member of their projects (filter by project membership)
     public List<Task> listAllForUser(String email) {
-        return repo.findAll().stream()
-                .filter(t -> email.equals(t.getAssignee()))
+        return taskRepo.findAll().stream()
+                .filter(t -> isMember(t.getProjectId(), email))
                 .toList();
     }
 
+    // List by project: any member of the project can view tasks
     public List<Task> listByProjectForUser(String projectId, String email) {
-        return repo.findByProjectId(projectId).stream()
-                .filter(t -> email.equals(t.getAssignee()))
-                .toList();
+        if (!isMember(projectId, email)) {
+            throw new NotFoundException("Project not found: " + projectId);
+        }
+        return taskRepo.findByProjectId(projectId);
     }
 
-    // --- ADMIN METHODS ---
-    public Task create(Task t) {
-        t.setCreatedAt(Instant.now());
-        return repo.save(t);
-    }
-
+    // Admin and helpers
     public Task getById(String id) {
-        return repo.findById(id).orElseThrow(() -> new NotFoundException("Task not found: " + id));
+        return taskRepo.findById(id).orElseThrow(() -> new NotFoundException("Task not found: " + id));
     }
 
-    public Task update(String id, Task t) {
-        Task existing = getById(id);
-        existing.setTitle(t.getTitle());
-        existing.setDescription(t.getDescription());
-        existing.setStatus(t.getStatus());
-        existing.setPriority(t.getPriority());
-        existing.setAssignee(t.getAssignee());
-        return repo.save(existing);
-    }
-
-    public void delete(String id) {
-        if (!repo.existsById(id)) throw new NotFoundException("Task not found: " + id);
-        repo.deleteById(id);
-    }
-
-    public List<Task> listAll() {
-        return repo.findAll();
-    }
-
-    public List<Task> listByProject(String projectId) {
-        return repo.findByProjectId(projectId);
+    private boolean isMember(String projectId, String email) {
+        var project = projectRepo.findById(projectId)
+                .orElseThrow(() -> new NotFoundException("Project not found: " + projectId));
+        var members = project.getMembers();
+        return members != null && members.contains(email);
     }
 }
