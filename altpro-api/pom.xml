@@ -11,7 +11,7 @@
 	<groupId>com.taurasg.altpro</groupId>
 	<artifactId>altpro-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>altpro-api</name>
+	<name>api</name>
 	<description>Backend API for AltPro service</description>
 	<url/>
 	<licenses>
