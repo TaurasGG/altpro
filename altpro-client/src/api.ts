@@ -13,7 +13,10 @@ export async function post<T>(path: string, body: any): Promise<T> {
     headers: { 'Content-Type': 'application/json', ...authHeader() },
     body: JSON.stringify(body)
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`[${res.status}] ${text || res.statusText}`)
+  }
   return res.json()
 }
 
@@ -23,7 +26,10 @@ export async function put<T>(path: string, body: any): Promise<T> {
     headers: { 'Content-Type': 'application/json', ...authHeader() },
     body: JSON.stringify(body)
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`[${res.status}] ${text || res.statusText}`)
+  }
   return res.json()
 }
 
@@ -32,6 +38,8 @@ export async function del(path: string): Promise<void> {
     method: 'DELETE',
     headers: { ...authHeader() }
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`[${res.status}] ${text || res.statusText}`)
+  }
 }
-
