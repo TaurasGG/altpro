@@ -19,8 +19,13 @@ public class TokenCustomizerConfig {
             var userOpt = users.findByEmail(email);
             if (userOpt.isEmpty()) return;
 
-            var roles = userOpt.get().getRoles();
-            context.getClaims().claim("roles", roles); // įrašome roles į token
+            var u = userOpt.get();
+            var roles = u.getRoles();
+            context.getClaims().claim("roles", roles);
+            context.getClaims().claim("email", u.getEmail());
+            context.getClaims().claim("username", u.getUsername());
+            context.getClaims().claim("name", u.getDisplayName());
+            context.getClaims().subject(u.getId()); // sub = permanent user id
         };
     }
 }

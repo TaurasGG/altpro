@@ -17,6 +17,11 @@ public class User {
     @Indexed(unique = true)
     private String email;
 
+    @Indexed(unique = true)
+    private String username;
+
+    private String displayName;
+
     private String passwordHash;
 
     private Set<String> roles; // e.g., ["USER"], ["ADMIN"]

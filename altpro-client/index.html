@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AltPro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --color-primary: #2563eb;
+        --color-secondary: #f59e0b;
+        --color-bg: #0f172a;
+        --color-content: #111827;
+        --color-footer: #1f2937;
+        --color-text: #e5e7eb;
+      }
+      html, body, #root { height: 100%; }
+      body { margin: 0; font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji'; background: var(--color-bg); color: var(--color-text); }
+      .container { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+      header { background: var(--color-primary); color: white; }
+      header .nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; }
+      header .brand { font-weight: 700; }
+      header .links { display: flex; gap: 16px; }
+      header .links a { color: white; text-decoration: none; font-weight: 600; }
+      header .links a:hover { text-decoration: underline; transition: all .2s ease; }
+      .hamburger { display: none; background: none; border: none; color: white; font-size: 24px; }
+      @media (max-width: 768px) {
+        header .links { display: none; }
+        .hamburger { display: inline-block; }
+      }
+      main { background: var(--color-content); min-height: calc(100% - 160px); }
+      footer { background: var(--color-footer); color: #cbd5e1; }
+      footer .container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 20px 0; }
+      @media (max-width: 768px) {
+        footer .container { grid-template-columns: 1fr; }
+      }
+      img.responsive { max-width: 100%; height: auto; border-radius: 8px; }
+      .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+      .card { background: #1f2937; padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: transform .15s ease; }
+      .card:hover { transform: translateY(-2px); }
+      .btn { background: var(--color-primary); border: none; color: white; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+      .btn.secondary { background: var(--color-secondary); color: #111827; }
+      .btn:hover { opacity: 0.9; transition: opacity .2s ease; }
+      .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); display: flex; align-items: center; justify-content: center; }
+      .modal { background: #e5e7eb; color: #111827; padding: 20px; border-radius: 8px; width: min(480px, 90%); }
+      .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+      .field input, .field select, .field textarea { padding: 8px 10px; border-radius: 6px; border: 1px solid #374151; background: #111827; color: #e5e7eb; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

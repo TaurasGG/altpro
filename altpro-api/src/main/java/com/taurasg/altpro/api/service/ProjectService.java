@@ -11,13 +11,19 @@ import java.util.List;
 @Service
 public class ProjectService {
     private final ProjectRepository repo;
-    public ProjectService(ProjectRepository repo) { this.repo = repo; }
+    private final OrganizationService organizations;
+    public ProjectService(ProjectRepository repo, OrganizationService organizations) {
+        this.repo = repo;
+        this.organizations = organizations;
+    }
 
     // --- USER METHODS ---
     public Project createForUser(Project p, String email) {
         p.setId(null);
         p.setCreatedAt(Instant.now());
-        // Ensure creator is a member
+        if (!organizations.isAdmin(p.getOrganizationId(), email)) {
+            throw new NotFoundException("Organization not found: " + p.getOrganizationId());
+        }
         if (p.getMembers() == null || p.getMembers().isEmpty()) {
             p.setMembers(List.of(email));
         } else if (!p.getMembers().contains(email)) {
@@ -28,29 +34,38 @@ public class ProjectService {
 
     public Project getByIdForUser(String id, String email) {
         Project project = getById(id);
-        if (project.getMembers() == null || !project.getMembers().contains(email)) {
+        boolean isMember = project.getMembers() != null && project.getMembers().contains(email);
+        boolean isOrgAdmin = organizations.isAdmin(project.getOrganizationId(), email);
+        if (!isMember && !isOrgAdmin) {
             throw new NotFoundException("Project not found: " + id);
         }
         return project;
     }
 
     public Project updateForUser(String id, Project p, String email) {
-        Project existing = getByIdForUser(id, email);
+        Project existing = getById(id);
+        boolean isMember = existing.getMembers() != null && existing.getMembers().contains(email);
+        boolean isOrgAdmin = organizations.isAdmin(existing.getOrganizationId(), email);
+        if (!isMember && !isOrgAdmin) {
+            throw new NotFoundException("Project not found: " + id);
+        }
         existing.setName(p.getName());
         existing.setDescription(p.getDescription());
-        // Only allow updating members if user is already a member
         existing.setMembers(p.getMembers());
         return repo.save(existing);
     }
 
     public void deleteForUser(String id, String email) {
-        Project existing = getByIdForUser(id, email);
+        Project existing = getById(id);
+        if (!organizations.isAdmin(existing.getOrganizationId(), email)) {
+            throw new NotFoundException("Project not found: " + id);
+        }
         repo.delete(existing);
     }
 
     public List<Project> listAllForUser(String email) {
         return repo.findAll().stream()
-                .filter(pr -> pr.getMembers() != null && pr.getMembers().contains(email))
+                .filter(pr -> (pr.getMembers() != null && pr.getMembers().contains(email)) || organizations.isAdmin(pr.getOrganizationId(), email))
                 .toList();
     }
 

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "org-1",
+    "name": "Default Org",
+    "description": "Primary organization for AltPro",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "members": [
+      { "userId": "u-admin", "role": "ADMIN" },
+      { "userId": "u-user", "role": "MEMBER" }
+    ]
+  }
+]

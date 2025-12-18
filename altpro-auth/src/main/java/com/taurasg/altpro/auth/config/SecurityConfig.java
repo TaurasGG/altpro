@@ -36,6 +36,7 @@ public class SecurityConfig {
         http
                 .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.ignoringRequestMatchers(authorizationServerConfigurer.getEndpointsMatcher()))
                 .with(authorizationServerConfigurer, Customizer.withDefaults());
 
@@ -53,6 +54,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**", "/.well-known/jwks.json").permitAll()
                         .anyRequest().authenticated()
                 )
+                .cors(Customizer.withDefaults())
                 .formLogin(Customizer.withDefaults());
         return http.build();
     }
@@ -130,5 +132,18 @@ public class SecurityConfig {
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
+    }
+
+    @Bean
+    @org.springframework.web.bind.annotation.CrossOrigin
+    org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+        var config = new org.springframework.web.cors.CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins(java.util.List.of("http://localhost:3000"));
+        config.setAllowedMethods(java.util.List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        config.setAllowedHeaders(java.util.List.of("Authorization","Content-Type"));
+        var source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }

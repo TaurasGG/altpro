@@ -3,7 +3,110 @@ info:
   title: AltPro API
   version: '1.0'
 paths:
-  /api/projects:
+  /api/orgs:
+    post:
+      summary: Create organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+      responses:
+        '201': { description: Created }
+    get:
+      summary: List organizations
+      responses:
+        '200': { description: OK }
+  /api/orgs/{id}:
+    get:
+      summary: Get organization
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+    put:
+      summary: Update organization
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Delete organization
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '204': { description: No Content }
+  /api/orgs/{id}/members:
+    post:
+      summary: Add organization member
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId: { type: string }
+                role: { type: string, enum: [ADMIN, MEMBER] }
+      responses:
+        '200': { description: OK }
+  /api/orgs/{id}/members/{memberId}:
+    put:
+      summary: Update member role
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+        - in: path
+          name: memberId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role: { type: string, enum: [ADMIN, MEMBER] }
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Remove organization member
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+        - in: path
+          name: memberId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+  /api/orgs/{orgId}/projects:
     post:
       summary: Create project
       requestBody:
@@ -20,10 +123,15 @@ paths:
       responses:
         '200':
           description: OK
-  /api/projects/{id}:
+  /api/orgs/{orgId}/projects/{id}:
     get:
       summary: Get project by id
       parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema:
+            type: string
         - in: path
           name: id
           required: true
@@ -35,6 +143,11 @@ paths:
     put:
       summary: Update project
       parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema:
+            type: string
         - in: path
           name: id
           required: true
@@ -52,13 +165,18 @@ paths:
       summary: Delete project
       parameters:
         - in: path
+          name: orgId
+          required: true
+          schema:
+            type: string
+        - in: path
           name: id
           required: true
           schema:
             type: string
       responses:
         '204': { description: No Content }
-  /api/tasks:
+  /api/orgs/{orgId}/tasks:
     post:
       summary: Create task
       requestBody:
@@ -73,10 +191,15 @@ paths:
       summary: List tasks
       responses:
         '200': { description: OK }
-  /api/tasks/{id}:
+  /api/orgs/{orgId}/tasks/{id}:
     get:
       summary: Get task by id
       parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema:
+            type: string
         - in: path
           name: id
           required: true
@@ -88,6 +211,11 @@ paths:
     put:
       summary: Update task
       parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema:
+            type: string
         - in: path
           name: id
           required: true
@@ -105,10 +233,15 @@ paths:
       summary: Delete task
       responses:
         '200': { description: OK }
-  /api/tasks/project/{projectId}:
+  /api/orgs/{orgId}/tasks/project/{projectId}:
     get:
       summary: List tasks by project
       parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema:
+            type: string
         - in: path
           name: projectId
           required: true
@@ -116,7 +249,7 @@ paths:
             type: string
       responses:
         '200': { description: OK }
-  /api/comments:
+  /api/orgs/{orgId}/comments:
     post:
       summary: Create comment
       requestBody:
@@ -131,10 +264,15 @@ paths:
       summary: List comments
       responses:
         '200': { description: OK }
-  /api/comments/{id}:
+  /api/orgs/{orgId}/comments/{id}:
     get:
       summary: Get comment by id
       parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema:
+            type: string
         - in: path
           name: id
           required: true
@@ -157,10 +295,15 @@ paths:
       summary: Delete comment
       responses:
         '204': { description: No Content }
-  /api/comments/task/{taskId}:
+  /api/orgs/{orgId}/comments/task/{taskId}:
     get:
       summary: List comments by task
       parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema:
+            type: string
         - in: path
           name: taskId
           required: true
@@ -170,10 +313,27 @@ paths:
         '200': { description: OK }
 components:
   schemas:
+    Organization:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        createdAt: { type: string, format: date-time }
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrgMember'
+    OrgMember:
+      type: object
+      properties:
+        userId: { type: string }
+        role: { type: string, enum: [ADMIN, MEMBER] }
     Project:
       type: object
       properties:
         id: { type: string }
+        organizationId: { type: string }
         name: { type: string }
         description: { type: string }
         createdAt: { type: string, format: date-time }

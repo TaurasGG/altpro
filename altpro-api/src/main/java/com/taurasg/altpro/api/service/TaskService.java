@@ -13,16 +13,26 @@ import java.util.List;
 public class TaskService {
     private final TaskRepository taskRepo;
     private final ProjectRepository projectRepo; // add
+    private final OrganizationService organizations;
 
-    public TaskService(TaskRepository taskRepo, ProjectRepository projectRepo) {
+    public TaskService(TaskRepository taskRepo, ProjectRepository projectRepo, OrganizationService organizations) {
         this.taskRepo = taskRepo;
         this.projectRepo = projectRepo;
+        this.organizations = organizations;
     }
 
     // Create: assignee = creator
     public Task createForUser(Task t, String email) {
         t.setId(null);
         t.setCreatedAt(Instant.now());
+        var project = projectRepo.findById(t.getProjectId())
+                .orElseThrow(() -> new NotFoundException("Project not found: " + t.getProjectId()));
+        var members = project.getMembers();
+        boolean isMember = members != null && members.contains(email);
+        boolean isOrgAdmin = organizations.isAdmin(project.getOrganizationId(), email);
+        if (!isMember && !isOrgAdmin) {
+            throw new NotFoundException("Project not found: " + t.getProjectId());
+        }
         t.setAssignee(email);
         return taskRepo.save(t);
     }
@@ -30,7 +40,11 @@ public class TaskService {
     // Read: allow if user is member of the task's project
     public Task getByIdForUser(String id, String email) {
         Task task = getById(id);
-        if (!isMember(task.getProjectId(), email)) {
+        var project = projectRepo.findById(task.getProjectId())
+                .orElseThrow(() -> new NotFoundException("Project not found: " + task.getProjectId()));
+        boolean isMember = project.getMembers() != null && project.getMembers().contains(email);
+        boolean isOrgAdmin = organizations.isAdmin(project.getOrganizationId(), email);
+        if (!isMember && !isOrgAdmin) {
             throw new NotFoundException("Task not found: " + id);
         }
         return task;
@@ -39,7 +53,10 @@ public class TaskService {
     // Update: only assignee
     public Task updateForUser(String id, Task update, String email) {
         Task existing = getById(id);
-        if (!email.equals(existing.getAssignee())) {
+        var project = projectRepo.findById(existing.getProjectId())
+                .orElseThrow(() -> new NotFoundException("Project not found: " + existing.getProjectId()));
+        boolean isOrgAdmin = organizations.isAdmin(project.getOrganizationId(), email);
+        if (!email.equals(existing.getAssignee()) && !isOrgAdmin) {
             throw new NotFoundException("Task not found: " + id);
         }
         existing.setTitle(update.getTitle());
@@ -52,7 +69,10 @@ public class TaskService {
     // Delete: only assignee
     public void deleteForUser(String id, String email) {
         Task existing = getById(id);
-        if (!email.equals(existing.getAssignee())) {
+        var project = projectRepo.findById(existing.getProjectId())
+                .orElseThrow(() -> new NotFoundException("Project not found: " + existing.getProjectId()));
+        boolean isOrgAdmin = organizations.isAdmin(project.getOrganizationId(), email);
+        if (!email.equals(existing.getAssignee()) && !isOrgAdmin) {
             throw new NotFoundException("Task not found: " + id);
         }
         taskRepo.delete(existing);
@@ -61,7 +81,13 @@ public class TaskService {
     // List all: tasks where user is member of their projects (filter by project membership)
     public List<Task> listAllForUser(String email) {
         return taskRepo.findAll().stream()
-                .filter(t -> isMember(t.getProjectId(), email))
+                .filter(t -> {
+                    var project = projectRepo.findById(t.getProjectId()).orElse(null);
+                    if (project == null) return false;
+                    boolean isMember = project.getMembers() != null && project.getMembers().contains(email);
+                    boolean isOrgAdmin = organizations.isAdmin(project.getOrganizationId(), email);
+                    return isMember || isOrgAdmin;
+                })
                 .toList();
     }
 
@@ -70,7 +96,9 @@ public class TaskService {
         var project = projectRepo.findById(projectId)
                 .orElseThrow(() -> new NotFoundException("Project not found: " + projectId));
 
-        if (project.getMembers() == null || !project.getMembers().contains(email)) {
+        boolean isMember = project.getMembers() != null && project.getMembers().contains(email);
+        boolean isOrgAdmin = organizations.isAdmin(project.getOrganizationId(), email);
+        if (!isMember && !isOrgAdmin) {
             throw new NotFoundException("Not a member of project: " + projectId);
         }
 
@@ -103,10 +131,5 @@ public class TaskService {
         return taskRepo.findById(id).orElseThrow(() -> new NotFoundException("Task not found: " + id));
     }
 
-    private boolean isMember(String projectId, String email) {
-        var project = projectRepo.findById(projectId)
-                .orElseThrow(() -> new NotFoundException("Project not found: " + projectId));
-        var members = project.getMembers();
-        return members != null && members.contains(email);
-    }
+    // admin methods retained for compatibility
 }

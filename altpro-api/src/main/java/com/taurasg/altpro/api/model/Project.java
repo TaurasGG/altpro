@@ -18,6 +18,9 @@ public class Project {
     @Id
     private String id;
 
+    @NotBlank(message = "organizationId is required")
+    private String organizationId;
+
     @NotBlank(message = "name is required")
     private String name;
 

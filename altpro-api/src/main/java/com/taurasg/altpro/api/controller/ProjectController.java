@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/projects")
+@RequestMapping("/api/orgs/{orgId}/projects")
 public class ProjectController {
     private final ProjectService service;
     public ProjectController(ProjectService service) { this.service = service; }
@@ -21,29 +21,30 @@ public class ProjectController {
     // --- USER ENDPOINTS ---
     @PreAuthorize("hasAuthority('SCOPE_api.write')")
     @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<Project> create(@Valid @RequestBody Project p, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<Project> create(@PathVariable String orgId, @Valid @RequestBody Project p, @AuthenticationPrincipal Jwt jwt) {
         String email = jwt.getSubject();
+        p.setOrganizationId(orgId);
         Project saved = service.createForUser(p, email);
         return ResponseEntity.status(201).body(saved);
     }
 
     @PreAuthorize("hasAuthority('SCOPE_api.read')")
     @GetMapping("/{id}")
-    public ResponseEntity<Project> getById(@PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<Project> getById(@PathVariable String orgId, @PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
         String email = jwt.getSubject();
         return ResponseEntity.ok(service.getByIdForUser(id, email));
     }
 
     @PreAuthorize("hasAuthority('SCOPE_api.write')")
     @PutMapping("/{id}")
-    public ResponseEntity<Project> update(@PathVariable String id, @Valid @RequestBody Project p, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<Project> update(@PathVariable String orgId, @PathVariable String id, @Valid @RequestBody Project p, @AuthenticationPrincipal Jwt jwt) {
         String email = jwt.getSubject();
         return ResponseEntity.ok(service.updateForUser(id, p, email));
     }
 
     @PreAuthorize("hasAuthority('SCOPE_api.write')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<Void> delete(@PathVariable String orgId, @PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
         String email = jwt.getSubject();
         service.deleteForUser(id, email);
         return ResponseEntity.noContent().build();
@@ -51,28 +52,8 @@ public class ProjectController {
 
     @PreAuthorize("hasAuthority('SCOPE_api.read')")
     @GetMapping
-    public ResponseEntity<List<Project>> listAll(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<List<Project>> listAll(@PathVariable String orgId, @AuthenticationPrincipal Jwt jwt) {
         String email = jwt.getSubject();
         return ResponseEntity.ok(service.listAllForUser(email));
-    }
-
-    // --- ADMIN ENDPOINTS ---
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/all")
-    public ResponseEntity<List<Project>> adminListAll() {
-        return ResponseEntity.ok(service.listAll());
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/admin/{id}")
-    public ResponseEntity<Void> adminDelete(@PathVariable String id) {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/admin/{id}")
-    public ResponseEntity<Project> adminUpdate(@PathVariable String id, @Valid @RequestBody Project p) {
-        return ResponseEntity.ok(service.update(id, p));
     }
 }

@@ -13,7 +13,7 @@
     </parent>
 
     <groupId>com.taurasg.altpro</groupId>
-    <artifactId>auth</artifactId>
+    <artifactId>altpro-auth</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>auth</name>
     <description>Authorization Server</description>

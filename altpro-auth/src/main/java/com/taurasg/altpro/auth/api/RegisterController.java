@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 
-record RegisterRequest(@Email String email, @NotBlank String password) {}
+record RegisterRequest(@Email String email, @NotBlank String username, @NotBlank String displayName, @NotBlank String password) {}
 
 @RestController
 @RequestMapping("/auth")
@@ -29,8 +29,13 @@ public class RegisterController {
         if (users.existsByEmail(req.email())) {
             return ResponseEntity.badRequest().body("{\"error\":\"Email already registered\"}");
         }
+        if (users.existsByUsername(req.username())) {
+            return ResponseEntity.badRequest().body("{\"error\":\"Username already taken\"}");
+        }
         var u = new User();
         u.setEmail(req.email());
+        u.setUsername(req.username());
+        u.setDisplayName(req.displayName());
         u.setPasswordHash(encoder.encode(req.password()));
         u.setRoles(Set.of("USER"));
         users.save(u);
