@@ -14,10 +14,9 @@ import java.util.List;
 @Service
 public class OrganizationService {
     private final OrganizationRepository repo;
+    private final AuthClient auth;
 
-    public OrganizationService(OrganizationRepository repo) {
-        this.repo = repo;
-    }
+    public OrganizationService(OrganizationRepository repo, AuthClient auth) { this.repo = repo; this.auth = auth; }
 
     public Organization createForUser(Organization o, String userId) {
         o.setId(null);
@@ -90,6 +89,16 @@ public class OrganizationService {
         members.removeIf(m -> m.getUserId().equals(targetUserId));
         org.setMembers(members);
         return repo.save(org);
+    }
+
+    public Organization addMemberByIdentity(String id, String identity, boolean isUsername, OrgRole role, String userId) {
+        var org = getById(id);
+        requireAdmin(org, userId);
+        String targetUserId;
+        var profile = isUsername ? auth.findByUsername(identity) : auth.findByEmail(identity);
+        if (profile == null || profile.get("id") == null) throw new NotFoundException("User not found: " + identity);
+        targetUserId = (String) profile.get("id");
+        return addMember(id, targetUserId, role, userId);
     }
 
     public boolean isAdmin(String orgId, String userId) {

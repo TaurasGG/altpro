@@ -49,3 +49,8 @@ export function authHeader(): Record<string, string> {
   const token = localStorage.getItem('access_token')
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
+
+export function logout() {
+  localStorage.clear()
+  window.location.href = `${AUTH_SERVER}/logout`
+}

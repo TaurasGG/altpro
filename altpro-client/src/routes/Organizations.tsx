@@ -8,6 +8,8 @@ export default function Organizations() {
   const [orgs, setOrgs] = useState<Organization[]>([])
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ name: '', description: '' })
+  const [inviteForm, setInviteForm] = useState({ username: '', email: '' })
+  const [activeOrg, setActiveOrg] = useState<string>('')
 
   async function load() {
     const data = await get<Organization[]>('/api/orgs')
@@ -23,6 +25,11 @@ export default function Organizations() {
     setForm({ name: '', description: '' })
   }
 
+  async function invite() {
+    await post(`/api/orgs/${activeOrg}/invitations`, inviteForm)
+    setInviteForm({ username: '', email: '' })
+  }
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -31,10 +38,27 @@ export default function Organizations() {
       </div>
       <div className="grid">
         {orgs.map(o => (
-          <div key={o.id} className="card" style={{ gridColumn: 'span 4' }}>
+          <div key={o.id} className="card" style={{ gridColumn: 'span 6' }}>
             <h3 style={{ marginTop: 0 }}>{o.name}</h3>
             <p>{o.description}</p>
             <p><small>Members: {o.members?.length ?? 0}</small></p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn" onClick={() => setActiveOrg(o.id)}>Settings</button>
+              <a className="btn secondary" href={`/projects?org=${o.id}`}>Projects</a>
+            </div>
+            {activeOrg === o.id && (
+              <div style={{ marginTop: 10 }}>
+                <h4>Invite member</h4>
+                <div className="field">
+                  <label>Username (@username) or Email</label>
+                  <input value={inviteForm.username} onChange={e => setInviteForm({ ...inviteForm, username: e.target.value, email: '' })} placeholder="@username" />
+                </div>
+                <div className="field">
+                  <input value={inviteForm.email} onChange={e => setInviteForm({ ...inviteForm, email: e.target.value, username: '' })} placeholder="email@example.com" />
+                </div>
+                <button className="btn" onClick={invite}>Send Invite</button>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -61,4 +85,3 @@ export default function Organizations() {
     </div>
   )
 }
-

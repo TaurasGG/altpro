@@ -56,13 +56,15 @@ public class OrganizationController {
     }
 
     // Member management
-    record MemberRequest(String userId, OrgRole role) {}
+    record MemberRequest(String username, String email, OrgRole role) {}
 
     @PreAuthorize("hasAuthority('SCOPE_api.write')")
     @PostMapping("/{id}/members")
     public ResponseEntity<Organization> addMember(@PathVariable String id, @RequestBody MemberRequest req, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
-        return ResponseEntity.ok(service.addMember(id, req.userId(), req.role(), userId));
+        String target = req.username() != null ? req.username() : req.email();
+        var added = service.addMemberByIdentity(id, target, req.username() != null, req.role(), userId);
+        return ResponseEntity.ok(added);
     }
 
     @PreAuthorize("hasAuthority('SCOPE_api.write')")
