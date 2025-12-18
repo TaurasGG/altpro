@@ -8,6 +8,10 @@ import Projects from './Projects'
 import Tasks from './Tasks'
 import Callback from './Callback'
 import { logout } from '../sso'
+import RegisterRedirect from './RegisterRedirect'
+import AutoLogin from './AutoLogin'
+import OrganizationHome from './OrganizationHome'
+import ProjectSettings from './ProjectSettings'
 
 export default function App() {
   const [open, setOpen] = useState(false)
@@ -25,12 +29,15 @@ export default function App() {
           <div className="brand">AltPro</div>
           <nav className="links" aria-label="Primary">
             {!token ? (
-              <Link to="/">Home</Link>
+              <>
+                <Link to="/">Home</Link>
+                <Link to="/register">Register</Link>
+              </>
             ) : (
               <>
                 <Link to="/">Home</Link>
                 <Link to="/dashboard">Dashboard</Link>
-                <a href="http://localhost:9000" style={{ color: 'white', textDecoration: 'none', fontWeight: 600 }}>Settings</a>
+                <a href="http://localhost:9000/settings.html" style={{ color: 'white', textDecoration: 'none', fontWeight: 600 }}>Settings</a>
                 <button className="btn secondary" onClick={() => logout()}>Logout</button>
               </>
             )}
@@ -41,12 +48,14 @@ export default function App() {
           <div className="container" style={{ paddingBottom: 12 }}>
             <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <Link to="/">Home</Link>
-              {token && (
+              {token ? (
                 <>
                   <Link to="/dashboard">Dashboard</Link>
-                  <a href="http://localhost:9000">Settings</a>
+                  <a href="http://localhost:9000/settings.html">Settings</a>
                   <button className="btn secondary" onClick={() => logout()}>Logout</button>
                 </>
+              ) : (
+                <Link to="/register">Register</Link>
               )}
             </div>
           </div>
@@ -61,6 +70,10 @@ export default function App() {
             <Route path="/projects" element={<Projects />} />
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/callback" element={<Callback />} />
+            <Route path="/register" element={<RegisterRedirect />} />
+            <Route path="/auto-login" element={<AutoLogin />} />
+            <Route path="/org-home" element={<OrganizationHome />} />
+            <Route path="/project-settings" element={<ProjectSettings />} />
           </Routes>
         </div>
       </main>

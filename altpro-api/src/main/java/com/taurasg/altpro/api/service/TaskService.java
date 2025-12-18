@@ -38,12 +38,12 @@ public class TaskService {
     }
 
     // Read: allow if user is member of the task's project
-    public Task getByIdForUser(String id, String email) {
+    public Task getByIdForUser(String id, String userId) {
         Task task = getById(id);
         var project = projectRepo.findById(task.getProjectId())
                 .orElseThrow(() -> new NotFoundException("Project not found: " + task.getProjectId()));
-        boolean isMember = project.getMembers() != null && project.getMembers().contains(email);
-        boolean isOrgAdmin = organizations.isAdmin(project.getOrganizationId(), email);
+        boolean isMember = project.getMembers() != null && project.getMembers().contains(userId);
+        boolean isOrgAdmin = organizations.isAdmin(project.getOrganizationId(), userId);
         if (!isMember && !isOrgAdmin) {
             throw new NotFoundException("Task not found: " + id);
         }
@@ -79,25 +79,25 @@ public class TaskService {
     }
 
     // List all: tasks where user is member of their projects (filter by project membership)
-    public List<Task> listAllForUser(String email) {
+    public List<Task> listAllForUser(String userId) {
         return taskRepo.findAll().stream()
                 .filter(t -> {
                     var project = projectRepo.findById(t.getProjectId()).orElse(null);
                     if (project == null) return false;
-                    boolean isMember = project.getMembers() != null && project.getMembers().contains(email);
-                    boolean isOrgAdmin = organizations.isAdmin(project.getOrganizationId(), email);
+                    boolean isMember = project.getMembers() != null && project.getMembers().contains(userId);
+                    boolean isOrgAdmin = organizations.isAdmin(project.getOrganizationId(), userId);
                     return isMember || isOrgAdmin;
                 })
                 .toList();
     }
 
     // List by project: any member of the project can view tasks
-    public List<Task> listByProjectForUser(String projectId, String email) {
+    public List<Task> listByProjectForUser(String projectId, String userId) {
         var project = projectRepo.findById(projectId)
                 .orElseThrow(() -> new NotFoundException("Project not found: " + projectId));
 
-        boolean isMember = project.getMembers() != null && project.getMembers().contains(email);
-        boolean isOrgAdmin = organizations.isAdmin(project.getOrganizationId(), email);
+        boolean isMember = project.getMembers() != null && project.getMembers().contains(userId);
+        boolean isOrgAdmin = organizations.isAdmin(project.getOrganizationId(), userId);
         if (!isMember && !isOrgAdmin) {
             throw new NotFoundException("Not a member of project: " + projectId);
         }
