@@ -10,7 +10,7 @@ export default function Callback() {
     const code = params.get('code')
     if (!code) return
     exchangeCodeForToken(code)
-      .then(() => navigate('/orgs'))
+      .then(() => navigate('/'))
       .catch(() => navigate('/'))
   }, [params, navigate])
 

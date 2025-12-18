@@ -7,6 +7,8 @@ export default function OrganizationHome() {
   const params = new URLSearchParams(window.location.search)
   const orgId = params.get('focus') || ''
   const [projects, setProjects] = useState<Project[]>([])
+  const [showCreate, setShowCreate] = useState(false)
+  const [form, setForm] = useState({ name: '', description: '' })
 
   useEffect(() => {
     if (!orgId) return
@@ -16,6 +18,10 @@ export default function OrganizationHome() {
   async function leaveOrg() {
     await post(`/api/orgs/${orgId}/leave`, {})
     window.location.href = '/dashboard'
+  }
+  async function createProject() {
+    const created = await post<Project>(`/api/orgs/${orgId}/projects`, form)
+    window.location.href = `/tasks?project=${created.id}&org=${orgId}`
   }
 
   return (
@@ -29,6 +35,9 @@ export default function OrganizationHome() {
       </div>
       <div className="card">
         <h3>Projects</h3>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+          <button className="btn" onClick={() => setShowCreate(true)}>New Project</button>
+        </div>
         {projects.map(p => (
           <div key={p.id} style={{ padding: '6px 0', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between' }}>
             <div>
@@ -42,7 +51,25 @@ export default function OrganizationHome() {
           </div>
         ))}
       </div>
+      {showCreate && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <h3>Create Project</h3>
+            <div className="field">
+              <label>Name</label>
+              <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+            </div>
+            <div className="field">
+              <label>Description</label>
+              <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn secondary" onClick={() => setShowCreate(false)}>Cancel</button>
+              <button className="btn" onClick={createProject}>Create</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
-

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { del, get, post, put } from '../api'
 
 type Project = { id: string, organizationId: string, name: string, description?: string, members?: string[] }
+type OrgMember = { userId: string, role: 'ADMIN' | 'MEMBER' }
 
 export default function ProjectSettings() {
   const params = new URLSearchParams(window.location.search)
@@ -11,12 +12,16 @@ export default function ProjectSettings() {
   const [form, setForm] = useState({ name: '', description: '' })
   const [memberForm, setMemberForm] = useState({ username: '', email: '' })
   const [confirming, setConfirming] = useState(false)
+  const [orgMembers, setOrgMembers] = useState<OrgMember[]>([])
+  const [selectedMember, setSelectedMember] = useState<string>('')
 
   async function load() {
     if (!orgId || !projectId) return
     const p = await get<Project>(`/api/orgs/${orgId}/projects/${projectId}`)
     setProject(p)
     setForm({ name: p.name, description: p.description || '' })
+    const org = await get<any>(`/api/orgs/${orgId}`)
+    setOrgMembers(org.members || [])
   }
   useEffect(() => { load() }, [])
 
@@ -30,6 +35,12 @@ export default function ProjectSettings() {
     await post(`/api/orgs/${orgId}/projects/${project.id}/members`, memberForm)
     load()
     setMemberForm({ username: '', email: '' })
+  }
+  async function addFromDropdown() {
+    if (!project || !selectedMember) return
+    await post(`/api/orgs/${orgId}/projects/${project.id}/members`, { username: '', email: selectedMember })
+    setSelectedMember('')
+    load()
   }
   async function removeMember(memberId: string) {
     if (!project) return
@@ -70,6 +81,16 @@ export default function ProjectSettings() {
               ))}
             </div>
             <div className="field">
+              <label>Add from organization</label>
+              <select value={selectedMember} onChange={e => setSelectedMember(e.target.value)}>
+                <option value="">Select member</option>
+                {orgMembers.map(m => (
+                  <option key={m.userId} value={m.userId}>{m.userId} ({m.role})</option>
+                ))}
+              </select>
+              <button className="btn" style={{ marginTop: 8 }} onClick={addFromDropdown}>Add</button>
+            </div>
+            <div className="field">
               <label>Invite by @username or email</label>
               <input value={memberForm.username} onChange={e => setMemberForm({ ...memberForm, username: e.target.value, email: '' })} placeholder="@username" />
             </div>
@@ -94,4 +115,3 @@ export default function ProjectSettings() {
     </div>
   )
 }
-

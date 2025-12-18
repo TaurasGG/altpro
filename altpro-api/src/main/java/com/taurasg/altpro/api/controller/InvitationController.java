@@ -39,16 +39,26 @@ public class InvitationController {
 
     @PreAuthorize("hasAuthority('SCOPE_api.write')")
     @PostMapping("/invitations/{id}/accept")
-    public ResponseEntity<Invitation> accept(@PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<Void> accept(@PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
-        return ResponseEntity.ok(service.accept(id, userId));
+        service.accept(id, userId);
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAuthority('SCOPE_api.write')")
     @PostMapping("/invitations/{id}/decline")
-    public ResponseEntity<Invitation> decline(@PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<Void> decline(@PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
-        return ResponseEntity.ok(service.decline(id, userId));
+        service.decline(id, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_api.write')")
+    @DeleteMapping("/orgs/{orgId}/invitations/{id}")
+    public ResponseEntity<Void> cancel(@PathVariable String orgId, @PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
+        service.cancel(orgId, id, userId);
+        return ResponseEntity.noContent().build();
     }
 }
 

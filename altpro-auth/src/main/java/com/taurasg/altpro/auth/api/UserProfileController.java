@@ -28,5 +28,11 @@ public class UserProfileController {
         return u.<ResponseEntity<?>>map(user -> ResponseEntity.ok(new UserProfile(user.getId(), user.getEmail(), user.getUsername(), user.getDisplayName())))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
-}
 
+    @GetMapping("/by-id/{id}")
+    public ResponseEntity<?> byId(@PathVariable String id) {
+        var u = users.findById(id);
+        return u.<ResponseEntity<?>>map(user -> ResponseEntity.ok(new UserProfile(user.getId(), user.getEmail(), user.getUsername(), user.getDisplayName())))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+}

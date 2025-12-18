@@ -55,20 +55,23 @@ public class InvitationService {
                 .toList();
     }
 
-    public Invitation accept(String id, String userId) {
+    public void accept(String id, String userId) {
         Invitation inv = repo.findById(id).orElseThrow(() -> new NotFoundException("Invitation not found: " + id));
         Organization org = orgs.getById(inv.getOrganizationId());
-        if (!"PENDING".equals(inv.getStatus())) return inv;
         orgs.addMember(org.getId(), userId, com.taurasg.altpro.api.model.OrgRole.MEMBER, userId);
-        inv.setStatus("ACCEPTED");
-        return repo.save(inv);
+        repo.delete(inv);
     }
 
-    public Invitation decline(String id, String userId) {
+    public void decline(String id, String userId) {
         Invitation inv = repo.findById(id).orElseThrow(() -> new NotFoundException("Invitation not found: " + id));
-        if (!"PENDING".equals(inv.getStatus())) return inv;
-        inv.setStatus("DECLINED");
-        return repo.save(inv);
+        repo.delete(inv);
+    }
+
+    public void cancel(String orgId, String id, String userId) {
+        if (!orgs.isAdmin(orgId, userId)) throw new NotFoundException("Organization not found: " + orgId);
+        Invitation inv = repo.findById(id).orElseThrow(() -> new NotFoundException("Invitation not found: " + id));
+        if (!orgId.equals(inv.getOrganizationId())) throw new NotFoundException("Invitation not found: " + id);
+        repo.delete(inv);
     }
 }
 

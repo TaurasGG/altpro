@@ -4,7 +4,7 @@ import { get, post, put, del } from '../api'
 type Organization = { id: string, name: string }
 type Project = { id: string, name: string }
 type Task = { id: string, projectId: string, title: string, description?: string, status: 'TODO'|'IN_PROGRESS'|'DONE', priority: number, assignee?: string }
-type Comment = { id: string, taskId: string, author: string, text: string }
+type Comment = { id: string, taskId: string, author: string, text: string, createdAt?: string }
 
 export default function Tasks() {
   const [orgs, setOrgs] = useState<Organization[]>([])
@@ -15,6 +15,9 @@ export default function Tasks() {
   const [comments, setComments] = useState<Record<string, Comment[]>>({})
   const [taskForm, setTaskForm] = useState({ title: '', description: '', status: 'TODO', priority: 1 })
   const [commentForm, setCommentForm] = useState({ text: '' })
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [editTask, setEditTask] = useState<Task | null>(null)
+  const [profiles, setProfiles] = useState<Record<string, { username?: string, displayName?: string }>>({})
 
   useEffect(() => { get<Organization[]>('/api/orgs').then(setOrgs) }, [])
 
@@ -54,6 +57,13 @@ export default function Tasks() {
   async function loadComments(taskId: string) {
     const list = await get<Comment[]>(`/api/orgs/${selectedOrg}/comments/task/${taskId}`)
     setComments(c => ({ ...c, [taskId]: list }))
+    const uniqueAuthors = Array.from(new Set(list.map(c => c.author)))
+    for (const uid of uniqueAuthors) {
+      if (!profiles[uid]) {
+        const p = await fetch(`http://localhost:9000/auth/users/by-id/${uid}`).then(r => r.ok ? r.json() : null).catch(() => null)
+        setProfiles(prev => ({ ...prev, [uid]: { username: p?.username, displayName: p?.displayName } }))
+      }
+    }
   }
 
   async function addComment(taskId: string) {
@@ -110,7 +120,7 @@ export default function Tasks() {
             <div key={t.id} style={{ borderBottom: '1px solid #334155', padding: '10px 0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <strong>{t.title}</strong>
+                  <strong style={{ cursor: 'pointer' }} onClick={() => { setSelectedTask(t); setEditTask(t); loadComments(t.id) }}>{t.title}</strong>
                   <div style={{ color: '#94a3b8' }}>{t.description}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
@@ -122,25 +132,60 @@ export default function Tasks() {
                   <button className="btn secondary" onClick={() => deleteTask(t.id)}>Delete</button>
                 </div>
               </div>
-              <div style={{ marginTop: 8 }}>
-                <button className="btn" onClick={() => loadComments(t.id)}>Load comments</button>
-                <div style={{ marginTop: 8 }}>
-                  <div className="field">
-                    <label>Add comment</label>
-                    <input value={commentForm.text} onChange={e => setCommentForm({ text: e.target.value })} />
-                  </div>
-                  <button className="btn secondary" onClick={() => addComment(t.id)}>Add</button>
-                </div>
-                {(comments[t.id] ?? []).map(c => (
-                  <div key={c.id} style={{ marginTop: 6 }}>
-                    <strong>{c.author}</strong>: {c.text}
-                  </div>
-                ))}
-              </div>
             </div>
           ))}
         </div>
       </div>
+      {selectedTask && editTask && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <h3>Task Details</h3>
+            <div className="field">
+              <label>Title</label>
+              <input value={editTask.title} onChange={e => setEditTask({ ...editTask, title: e.target.value })} />
+            </div>
+            <div className="field">
+              <label>Description</label>
+              <textarea value={editTask.description} onChange={e => setEditTask({ ...editTask, description: e.target.value })} />
+            </div>
+            <div className="field">
+              <label>Status</label>
+              <select value={editTask.status} onChange={e => setEditTask({ ...editTask, status: e.target.value as Task['status'] })}>
+                <option value="TODO">TODO</option>
+                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                <option value="DONE">DONE</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn" onClick={async () => {
+                const updated = await put<Task>(`/api/orgs/${selectedOrg}/tasks/${selectedTask.id}`, editTask)
+                setTasks(ts => ts.map(x => x.id === selectedTask.id ? updated : x))
+                setSelectedTask(null); setEditTask(null)
+              }}>Save</button>
+              <button className="btn secondary" onClick={() => { setSelectedTask(null); setEditTask(null) }}>Close</button>
+            </div>
+            <div style={{ marginTop: 12 }}>
+              <h4>Comments</h4>
+              <div style={{ marginTop: 8 }}>
+                <div className="field">
+                  <label>Add comment</label>
+                  <input value={commentForm.text} onChange={e => setCommentForm({ text: e.target.value })} />
+                </div>
+                <button className="btn secondary" onClick={() => addComment(selectedTask.id)}>Add</button>
+              </div>
+              {(comments[selectedTask.id] ?? []).map(c => (
+                <div key={c.id} style={{ borderBottom: '1px solid #334155', padding: '6px 0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <strong>{profiles[c.author]?.displayName || c.author} {profiles[c.author]?.username ? `(@${profiles[c.author]?.username})` : ''}</strong>
+                    {c.createdAt && <small style={{ color: '#94a3b8' }}>{new Date(c.createdAt).toLocaleString()}</small>}
+                  </div>
+                  <div>{c.text}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

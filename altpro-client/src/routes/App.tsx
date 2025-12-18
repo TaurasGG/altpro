@@ -17,6 +17,7 @@ export default function App() {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
   const token = localStorage.getItem('access_token')
+  const [confirmLogout, setConfirmLogout] = useState(false)
 
   useEffect(() => {
     setOpen(false)
@@ -38,7 +39,7 @@ export default function App() {
                 <Link to="/">Home</Link>
                 <Link to="/dashboard">Dashboard</Link>
                 <a href="http://localhost:9000/settings.html" style={{ color: 'white', textDecoration: 'none', fontWeight: 600 }}>Settings</a>
-                <button className="btn secondary" onClick={() => logout()}>Logout</button>
+                <button className="btn secondary" onClick={() => setConfirmLogout(true)}>Logout</button>
               </>
             )}
           </nav>
@@ -52,7 +53,7 @@ export default function App() {
                 <>
                   <Link to="/dashboard">Dashboard</Link>
                   <a href="http://localhost:9000/settings.html">Settings</a>
-                  <button className="btn secondary" onClick={() => logout()}>Logout</button>
+                  <button className="btn secondary" onClick={() => setConfirmLogout(true)}>Logout</button>
                 </>
               ) : (
                 <Link to="/register">Register</Link>
@@ -84,6 +85,18 @@ export default function App() {
           <div>Colors follow accessible contrast</div>
         </div>
       </footer>
+      {confirmLogout && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to log out?</p>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn secondary" onClick={() => setConfirmLogout(false)}>Cancel</button>
+              <button className="btn" onClick={() => logout()}>Logout</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

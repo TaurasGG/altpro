@@ -19,7 +19,9 @@ export default function Dashboard() {
 
   async function accept(id: string) {
     await post(`/api/invitations/${id}/accept`, {})
-    load()
+    const inv = invitations.find(i => i.id === id)
+    if (inv) window.location.href = `/org-home?focus=${inv.organizationId}`
+    else load()
   }
   async function decline(id: string) {
     await post(`/api/invitations/${id}/decline`, {})

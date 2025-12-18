@@ -86,6 +86,9 @@ public class OrganizationService {
         var org = getById(id);
         requireAdmin(org, userId);
         var members = org.getMembers() == null ? new ArrayList<OrgMember>() : new ArrayList<>(org.getMembers());
+        var target = members.stream().filter(m -> m.getUserId().equals(targetUserId)).findFirst().orElse(null);
+        if (target == null) return org;
+        if (target.getRole() == OrgRole.ADMIN) throw new NotFoundException("Organization not found: " + id);
         members.removeIf(m -> m.getUserId().equals(targetUserId));
         org.setMembers(members);
         return repo.save(org);
