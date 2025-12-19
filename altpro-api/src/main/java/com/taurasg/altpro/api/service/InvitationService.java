@@ -52,18 +52,33 @@ public class InvitationService {
                 .filter(i -> "PENDING".equals(i.getStatus()))
                 .filter(i -> (i.getInviteeEmail() != null && i.getInviteeEmail().equals(email)) ||
                              (i.getInviteeUsername() != null && i.getInviteeUsername().equals(username)))
+                .filter(i -> orgs.exists(i.getOrganizationId()))
                 .toList();
     }
 
-    public void accept(String id, String userId) {
+    public void accept(String id, String userId, String email, String username) {
         Invitation inv = repo.findById(id).orElseThrow(() -> new NotFoundException("Invitation not found: " + id));
+        boolean matchesEmail = inv.getInviteeEmail() != null && inv.getInviteeEmail().equals(email);
+        boolean matchesUsername = inv.getInviteeUsername() != null && inv.getInviteeUsername().equals(username);
+        if (!matchesEmail && !matchesUsername) {
+            throw new NotFoundException("Invitation not found: " + id);
+        }
+        if (!orgs.exists(inv.getOrganizationId())) {
+            repo.delete(inv);
+            return;
+        }
         Organization org = orgs.getById(inv.getOrganizationId());
-        orgs.addMember(org.getId(), userId, com.taurasg.altpro.api.model.OrgRole.MEMBER, userId);
+        orgs.addMemberByInvitation(org.getId(), userId);
         repo.delete(inv);
     }
 
-    public void decline(String id, String userId) {
+    public void decline(String id, String userId, String email, String username) {
         Invitation inv = repo.findById(id).orElseThrow(() -> new NotFoundException("Invitation not found: " + id));
+        boolean matchesEmail = inv.getInviteeEmail() != null && inv.getInviteeEmail().equals(email);
+        boolean matchesUsername = inv.getInviteeUsername() != null && inv.getInviteeUsername().equals(username);
+        if (!matchesEmail && !matchesUsername) {
+            throw new NotFoundException("Invitation not found: " + id);
+        }
         repo.delete(inv);
     }
 

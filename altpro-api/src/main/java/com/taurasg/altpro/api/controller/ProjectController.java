@@ -54,7 +54,7 @@ public class ProjectController {
     @GetMapping
     public ResponseEntity<List<Project>> listAll(@PathVariable String orgId, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
-        return ResponseEntity.ok(service.listAllForUser(userId));
+        return ResponseEntity.ok(service.listForOrgForUser(orgId, userId));
     }
 
     // Members management
@@ -64,9 +64,18 @@ public class ProjectController {
     @PostMapping("/{id}/members")
     public ResponseEntity<Project> addMember(@PathVariable String orgId, @PathVariable String id, @RequestBody MemberRequest req, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
-        String identity = req.username() != null ? req.username() : req.email();
-        boolean isUsername = req.username() != null;
-        return ResponseEntity.ok(service.addMemberByIdentity(id, identity, isUsername, userId));
+        String username = (req.username() != null && !req.username().isBlank()) ? req.username() : null;
+        String email = (req.email() != null && !req.email().isBlank()) ? req.email() : null;
+        if (email != null && !email.contains("@")) {
+            return ResponseEntity.ok(service.addMember(id, email, userId));
+        }
+        if (username != null) {
+            return ResponseEntity.ok(service.addMemberByIdentity(id, username, true, userId));
+        }
+        if (email != null) {
+            return ResponseEntity.ok(service.addMemberByIdentity(id, email, false, userId));
+        }
+        throw new com.taurasg.altpro.api.exception.NotFoundException("User identity required");
     }
 
     @PreAuthorize("hasAuthority('SCOPE_api.write')")

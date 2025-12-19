@@ -29,8 +29,8 @@ export default function Home() {
           <h1>Welcome to AltPro</h1>
           <p>Organize projects across organizations. Secure SSO via AltPro Auth.</p>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn" onClick={() => loginWithPkce()}>Login</button>
-            <a href="/register" className="btn secondary">Register</a>
+            <a href="/auto-login" className="btn">Login</a>
+            <a href="http://localhost:9000/register.html" className="btn secondary">Register</a>
           </div>
         </div>
         <div className="card" style={{ gridColumn: 'span 4' }}>

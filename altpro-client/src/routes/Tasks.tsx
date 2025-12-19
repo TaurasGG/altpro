@@ -18,8 +18,16 @@ export default function Tasks() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [editTask, setEditTask] = useState<Task | null>(null)
   const [profiles, setProfiles] = useState<Record<string, { username?: string, displayName?: string }>>({})
+  const [showCreateTask, setShowCreateTask] = useState(false)
 
-  useEffect(() => { get<Organization[]>('/api/orgs').then(setOrgs) }, [])
+  useEffect(() => { 
+    get<Organization[]>('/api/orgs').then(setOrgs) 
+    const params = new URLSearchParams(window.location.search)
+    const qpOrg = params.get('org') || ''
+    const qpProj = params.get('project') || ''
+    if (qpOrg) setSelectedOrg(qpOrg)
+    if (qpProj) setSelectedProject(qpProj)
+  }, [])
 
   useEffect(() => {
     if (!selectedOrg) return
@@ -41,6 +49,7 @@ export default function Tasks() {
     })
     setTasks(t => [created, ...t])
     setTaskForm({ title: '', description: '', status: 'TODO', priority: 1 })
+    setShowCreateTask(false)
   }
 
   async function updateTask(id: string, status: Task['status']) {
@@ -74,7 +83,10 @@ export default function Tasks() {
 
   return (
     <div>
-      <h2>Tasks</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2>Tasks</h2>
+        <button className="btn" disabled={!selectedProject} onClick={() => setShowCreateTask(true)}>New Task</button>
+      </div>
       <div className="grid">
         <div className="card" style={{ gridColumn: 'span 4' }}>
           <div className="field">
@@ -91,27 +103,6 @@ export default function Tasks() {
               {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
-          <div className="field">
-            <label>Title</label>
-            <input value={taskForm.title} onChange={e => setTaskForm({ ...taskForm, title: e.target.value })} />
-          </div>
-          <div className="field">
-            <label>Description</label>
-            <textarea value={taskForm.description} onChange={e => setTaskForm({ ...taskForm, description: e.target.value })} />
-          </div>
-          <div className="field">
-            <label>Status</label>
-            <select value={taskForm.status} onChange={e => setTaskForm({ ...taskForm, status: e.target.value as Task['status'] })}>
-              <option value="TODO">TODO</option>
-              <option value="IN_PROGRESS">IN_PROGRESS</option>
-              <option value="DONE">DONE</option>
-            </select>
-          </div>
-          <div className="field">
-            <label>Priority</label>
-            <input type="number" min={1} max={5} value={taskForm.priority} onChange={e => setTaskForm({ ...taskForm, priority: Number(e.target.value) })} />
-          </div>
-          <button className="btn" disabled={!selectedProject} onClick={createTask}>Create Task</button>
         </div>
 
         <div className="card" style={{ gridColumn: 'span 8' }}>
@@ -129,6 +120,7 @@ export default function Tasks() {
                     <option value="IN_PROGRESS">IN_PROGRESS</option>
                     <option value="DONE">DONE</option>
                   </select>
+                  <button className="btn" onClick={() => { setSelectedTask(t); setEditTask(t); loadComments(t.id) }}>Details</button>
                   <button className="btn secondary" onClick={() => deleteTask(t.id)}>Delete</button>
                 </div>
               </div>
@@ -136,6 +128,37 @@ export default function Tasks() {
           ))}
         </div>
       </div>
+      {showCreateTask && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <h3>Create Task</h3>
+            <div className="field">
+              <label>Title</label>
+              <input value={taskForm.title} onChange={e => setTaskForm({ ...taskForm, title: e.target.value })} />
+            </div>
+            <div className="field">
+              <label>Description</label>
+              <textarea value={taskForm.description} onChange={e => setTaskForm({ ...taskForm, description: e.target.value })} />
+            </div>
+            <div className="field">
+              <label>Status</label>
+              <select value={taskForm.status} onChange={e => setTaskForm({ ...taskForm, status: e.target.value as Task['status'] })}>
+                <option value="TODO">TODO</option>
+                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                <option value="DONE">DONE</option>
+              </select>
+            </div>
+            <div className="field">
+              <label>Priority</label>
+              <input type="number" min={1} max={5} value={taskForm.priority} onChange={e => setTaskForm({ ...taskForm, priority: Number(e.target.value) })} />
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn secondary" onClick={() => setShowCreateTask(false)}>Cancel</button>
+              <button className="btn" disabled={!selectedProject} onClick={createTask}>Create</button>
+            </div>
+          </div>
+        </div>
+      )}
       {selectedTask && editTask && (
         <div className="modal-backdrop">
           <div className="modal">
@@ -173,15 +196,17 @@ export default function Tasks() {
                 </div>
                 <button className="btn secondary" onClick={() => addComment(selectedTask.id)}>Add</button>
               </div>
-              {(comments[selectedTask.id] ?? []).map(c => (
-                <div key={c.id} style={{ borderBottom: '1px solid #334155', padding: '6px 0' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <strong>{profiles[c.author]?.displayName || c.author} {profiles[c.author]?.username ? `(@${profiles[c.author]?.username})` : ''}</strong>
-                    {c.createdAt && <small style={{ color: '#94a3b8' }}>{new Date(c.createdAt).toLocaleString()}</small>}
+              <div style={{ marginTop: 8, maxHeight: '40vh', overflowY: 'auto', paddingRight: 8 }}>
+                {(comments[selectedTask.id] ?? []).map(c => (
+                  <div key={c.id} style={{ borderBottom: '1px solid #334155', padding: '6px 0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <strong>{profiles[c.author]?.displayName || profiles[c.author]?.username || c.author}</strong>
+                      {c.createdAt && <small style={{ color: '#94a3b8' }}>{new Date(c.createdAt).toLocaleString()}</small>}
+                    </div>
+                    <div>{c.text}</div>
                   </div>
-                  <div>{c.text}</div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>

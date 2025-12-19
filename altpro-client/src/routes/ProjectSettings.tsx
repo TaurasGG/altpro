@@ -14,6 +14,7 @@ export default function ProjectSettings() {
   const [confirming, setConfirming] = useState(false)
   const [orgMembers, setOrgMembers] = useState<OrgMember[]>([])
   const [selectedMember, setSelectedMember] = useState<string>('')
+  const [profiles, setProfiles] = useState<Record<string, { username?: string, displayName?: string }>>({})
 
   async function load() {
     if (!orgId || !projectId) return
@@ -22,6 +23,13 @@ export default function ProjectSettings() {
     setForm({ name: p.name, description: p.description || '' })
     const org = await get<any>(`/api/orgs/${orgId}`)
     setOrgMembers(org.members || [])
+    const ids = Array.from(new Set([...(p.members || []), ...((org.members || []).map((m: OrgMember) => m.userId))]))
+    for (const uid of ids) {
+      if (uid && !profiles[uid]) {
+        const res = await fetch(`http://localhost:9000/auth/users/by-id/${uid}`).then(r => r.ok ? r.json() : null).catch(() => null)
+        if (res) setProfiles(prev => ({ ...prev, [uid]: { username: res.username, displayName: res.displayName } }))
+      }
+    }
   }
   useEffect(() => { load() }, [])
 
@@ -73,20 +81,26 @@ export default function ProjectSettings() {
           <div className="card" style={{ marginTop: 12 }}>
             <h3>Members</h3>
             <div style={{ marginBottom: 8 }}>
-              {project.members?.map(m => (
-                <div key={m} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
-                  <span>{m}</span>
-                  <button className="btn secondary" onClick={() => removeMember(m)}>Remove</button>
-                </div>
-              ))}
+              {project.members?.map(m => {
+                const p = profiles[m] || {}
+                const label = `${p.displayName || ''}${p.username ? ` (@${p.username})` : ''}`.trim() || m
+                return (
+                  <div key={m} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
+                    <span>{label}</span>
+                    <button className="btn secondary" onClick={() => removeMember(m)}>Remove</button>
+                  </div>
+                )
+              })}
             </div>
             <div className="field">
               <label>Add from organization</label>
               <select value={selectedMember} onChange={e => setSelectedMember(e.target.value)}>
                 <option value="">Select member</option>
-                {orgMembers.map(m => (
-                  <option key={m.userId} value={m.userId}>{m.userId} ({m.role})</option>
-                ))}
+                {orgMembers.map(m => {
+                  const p = profiles[m.userId] || {}
+                  const label = `${p.displayName || ''}${p.username ? ` (@${p.username})` : ''}`.trim() || m.userId
+                  return <option key={m.userId} value={m.userId}>{label} ({m.role})</option>
+                })}
               </select>
               <button className="btn" style={{ marginTop: 8 }} onClick={addFromDropdown}>Add</button>
             </div>

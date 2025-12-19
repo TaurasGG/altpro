@@ -12,6 +12,8 @@ import RegisterRedirect from './RegisterRedirect'
 import AutoLogin from './AutoLogin'
 import OrganizationHome from './OrganizationHome'
 import ProjectSettings from './ProjectSettings'
+import OrganizationSettings from './OrganizationSettings'
+import Logout from './Logout'
 
 export default function App() {
   const [open, setOpen] = useState(false)
@@ -32,12 +34,11 @@ export default function App() {
             {!token ? (
               <>
                 <Link to="/">Home</Link>
-                <Link to="/register">Register</Link>
+                <a href="http://localhost:9000/register.html">Register</a>
               </>
             ) : (
               <>
                 <Link to="/">Home</Link>
-                <Link to="/dashboard">Dashboard</Link>
                 <a href="http://localhost:9000/settings.html" style={{ color: 'white', textDecoration: 'none', fontWeight: 600 }}>Settings</a>
                 <button className="btn secondary" onClick={() => setConfirmLogout(true)}>Logout</button>
               </>
@@ -51,12 +52,11 @@ export default function App() {
               <Link to="/">Home</Link>
               {token ? (
                 <>
-                  <Link to="/dashboard">Dashboard</Link>
                   <a href="http://localhost:9000/settings.html">Settings</a>
                   <button className="btn secondary" onClick={() => setConfirmLogout(true)}>Logout</button>
                 </>
               ) : (
-                <Link to="/register">Register</Link>
+                <a href="http://localhost:9000/register.html">Register</a>
               )}
             </div>
           </div>
@@ -75,6 +75,8 @@ export default function App() {
             <Route path="/auto-login" element={<AutoLogin />} />
             <Route path="/org-home" element={<OrganizationHome />} />
             <Route path="/project-settings" element={<ProjectSettings />} />
+            <Route path="/org-settings" element={<OrganizationSettings />} />
+            <Route path="/logout" element={<Logout />} />
           </Routes>
         </div>
       </main>
@@ -82,7 +84,6 @@ export default function App() {
         <div className="container">
           <div>© {new Date().getFullYear()} AltPro</div>
           <div>Built with React + Vite</div>
-          <div>Colors follow accessible contrast</div>
         </div>
       </footer>
       {confirmLogout && (
@@ -92,7 +93,7 @@ export default function App() {
             <p>Are you sure you want to log out?</p>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button className="btn secondary" onClick={() => setConfirmLogout(false)}>Cancel</button>
-              <button className="btn" onClick={() => logout()}>Logout</button>
+              <button className="btn" onClick={() => { setConfirmLogout(false); window.location.href = '/logout' }}>Logout</button>
             </div>
           </div>
         </div>

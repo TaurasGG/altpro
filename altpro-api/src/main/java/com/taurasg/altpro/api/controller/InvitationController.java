@@ -41,7 +41,9 @@ public class InvitationController {
     @PostMapping("/invitations/{id}/accept")
     public ResponseEntity<Void> accept(@PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
-        service.accept(id, userId);
+        String email = jwt.getClaimAsString("email");
+        String username = jwt.getClaimAsString("username");
+        service.accept(id, userId, email, username);
         return ResponseEntity.noContent().build();
     }
 
@@ -49,7 +51,9 @@ public class InvitationController {
     @PostMapping("/invitations/{id}/decline")
     public ResponseEntity<Void> decline(@PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
-        service.decline(id, userId);
+        String email = jwt.getClaimAsString("email");
+        String username = jwt.getClaimAsString("username");
+        service.decline(id, userId, email, username);
         return ResponseEntity.noContent().build();
     }
 

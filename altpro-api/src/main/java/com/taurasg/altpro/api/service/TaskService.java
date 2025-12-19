@@ -14,11 +14,14 @@ public class TaskService {
     private final TaskRepository taskRepo;
     private final ProjectRepository projectRepo; // add
     private final OrganizationService organizations;
+    private final com.taurasg.altpro.api.repository.CommentRepository comments;
 
-    public TaskService(TaskRepository taskRepo, ProjectRepository projectRepo, OrganizationService organizations) {
+    public TaskService(TaskRepository taskRepo, ProjectRepository projectRepo, OrganizationService organizations,
+                       com.taurasg.altpro.api.repository.CommentRepository comments) {
         this.taskRepo = taskRepo;
         this.projectRepo = projectRepo;
         this.organizations = organizations;
+        this.comments = comments;
     }
 
     // Create: assignee = creator
@@ -75,6 +78,8 @@ public class TaskService {
         if (!email.equals(existing.getAssignee()) && !isOrgAdmin) {
             throw new NotFoundException("Task not found: " + id);
         }
+        var tComments = comments.findByTaskId(existing.getId());
+        comments.deleteAll(tComments);
         taskRepo.delete(existing);
     }
 
@@ -124,6 +129,8 @@ public class TaskService {
 
     public void delete(String id) {
         if (!taskRepo.existsById(id)) throw new NotFoundException("Task not found: " + id);
+        var tComments = comments.findByTaskId(id);
+        comments.deleteAll(tComments);
         taskRepo.deleteById(id);
     }
 

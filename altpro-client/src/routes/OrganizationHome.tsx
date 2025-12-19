@@ -2,34 +2,55 @@ import { useEffect, useState } from 'react'
 import { get, post } from '../api'
 
 type Project = { id: string, name: string, description?: string }
+type OrgDetails = { id: string, name: string, description?: string, members?: { userId?: string, email?: string, role: 'ADMIN' | 'MEMBER' }[] }
+
+function decodeIdTokenSub(): string | null {
+  const idToken = localStorage.getItem('id_token') || ''
+  if (!idToken.includes('.')) return null
+  try {
+    const payload = JSON.parse(atob(idToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
+    return payload.sub || payload.userId || null
+  } catch {
+    return null
+  }
+}
 
 export default function OrganizationHome() {
   const params = new URLSearchParams(window.location.search)
   const orgId = params.get('focus') || ''
+  const [org, setOrg] = useState<OrgDetails | null>(null)
   const [projects, setProjects] = useState<Project[]>([])
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState({ name: '', description: '' })
+  const me = decodeIdTokenSub()
 
   useEffect(() => {
     if (!orgId) return
     get<Project[]>(`/api/orgs/${orgId}/projects`).then(setProjects)
+    get<OrgDetails>(`/api/orgs/${orgId}`).then(setOrg).catch(() => setOrg(null))
   }, [orgId])
 
   async function leaveOrg() {
     await post(`/api/orgs/${orgId}/leave`, {})
-    window.location.href = '/dashboard'
+    window.location.href = '/'
   }
   async function createProject() {
-    const created = await post<Project>(`/api/orgs/${orgId}/projects`, form)
+    const created = await post<Project>(`/api/orgs/${orgId}/projects`, { ...form, organizationId: orgId })
     window.location.href = `/tasks?project=${created.id}&org=${orgId}`
   }
+
+  const isAdmin = !!org?.members?.some(m => (m.userId === me || m.email === me) && m.role === 'ADMIN')
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>Organization</h2>
+        <div>
+          <h2 style={{ marginBottom: 4 }}>{org?.name || 'Organization'}</h2>
+          {org?.description && <div style={{ color: '#94a3b8' }}>{org.description}</div>}
+        </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <a className="btn" href={`/orgs`}>Settings</a>
+          <a className="btn secondary" href="/">Home</a>
+          <a className="btn" href={`/org-settings?org=${orgId}`}>Settings</a>
           <button className="btn secondary" onClick={leaveOrg}>Leave</button>
         </div>
       </div>

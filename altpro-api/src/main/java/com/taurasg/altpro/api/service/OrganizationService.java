@@ -5,6 +5,7 @@ import com.taurasg.altpro.api.model.OrgMember;
 import com.taurasg.altpro.api.model.OrgRole;
 import com.taurasg.altpro.api.model.Organization;
 import com.taurasg.altpro.api.repository.OrganizationRepository;
+import com.taurasg.altpro.api.repository.InvitationRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -15,8 +16,18 @@ import java.util.List;
 public class OrganizationService {
     private final OrganizationRepository repo;
     private final AuthClient auth;
+    private final com.taurasg.altpro.api.repository.ProjectRepository projects;
+    private final com.taurasg.altpro.api.repository.TaskRepository tasks;
+    private final com.taurasg.altpro.api.repository.CommentRepository comments;
+    private final InvitationRepository invitations;
 
-    public OrganizationService(OrganizationRepository repo, AuthClient auth) { this.repo = repo; this.auth = auth; }
+    public OrganizationService(OrganizationRepository repo, AuthClient auth,
+                               com.taurasg.altpro.api.repository.ProjectRepository projects,
+                               com.taurasg.altpro.api.repository.TaskRepository tasks,
+                               com.taurasg.altpro.api.repository.CommentRepository comments,
+                               InvitationRepository invitations) {
+        this.repo = repo; this.auth = auth; this.projects = projects; this.tasks = tasks; this.comments = comments; this.invitations = invitations;
+    }
 
     public Organization createForUser(Organization o, String userId) {
         o.setId(null);
@@ -54,6 +65,18 @@ public class OrganizationService {
     public void deleteForAdmin(String id, String userId) {
         var org = getById(id);
         requireAdmin(org, userId);
+        var orgInvites = invitations.findByOrganizationId(id);
+        invitations.deleteAll(orgInvites);
+        var orgProjects = projects.findByOrganizationId(id);
+        for (var p : orgProjects) {
+            var projTasks = tasks.findByProjectId(p.getId());
+            for (var t : projTasks) {
+                var tComments = comments.findByTaskId(t.getId());
+                comments.deleteAll(tComments);
+            }
+            tasks.deleteAll(projTasks);
+        }
+        projects.deleteAll(orgProjects);
         repo.delete(org);
     }
 
@@ -104,6 +127,16 @@ public class OrganizationService {
         return addMember(id, targetUserId, role, userId);
     }
 
+    public Organization addMemberByInvitation(String id, String targetUserId) {
+        var org = getById(id);
+        var members = org.getMembers() == null ? new ArrayList<OrgMember>() : new ArrayList<>(org.getMembers());
+        if (members.stream().noneMatch(m -> m.getUserId().equals(targetUserId))) {
+            members.add(new OrgMember(targetUserId, OrgRole.MEMBER));
+        }
+        org.setMembers(members);
+        return repo.save(org);
+    }
+
     public boolean isAdmin(String orgId, String userId) {
         var org = getById(orgId);
         return org.getMembers() != null &&
@@ -118,6 +151,10 @@ public class OrganizationService {
 
     public Organization getById(String id) {
         return repo.findById(id).orElseThrow(() -> new NotFoundException("Organization not found: " + id));
+    }
+
+    public boolean exists(String id) {
+        return repo.existsById(id);
     }
 
     private void requireAdmin(Organization org, String userId) {

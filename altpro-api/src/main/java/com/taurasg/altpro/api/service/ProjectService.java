@@ -13,10 +13,16 @@ public class ProjectService {
     private final ProjectRepository repo;
     private final OrganizationService organizations;
     private final AuthClient auth;
-    public ProjectService(ProjectRepository repo, OrganizationService organizations, AuthClient auth) {
+    private final com.taurasg.altpro.api.repository.TaskRepository tasks;
+    private final com.taurasg.altpro.api.repository.CommentRepository comments;
+    public ProjectService(ProjectRepository repo, OrganizationService organizations, AuthClient auth,
+                          com.taurasg.altpro.api.repository.TaskRepository tasks,
+                          com.taurasg.altpro.api.repository.CommentRepository comments) {
         this.repo = repo;
         this.organizations = organizations;
         this.auth = auth;
+        this.tasks = tasks;
+        this.comments = comments;
     }
 
     // --- USER METHODS ---
@@ -62,12 +68,24 @@ public class ProjectService {
         if (!organizations.isAdmin(existing.getOrganizationId(), userId)) {
             throw new NotFoundException("Project not found: " + id);
         }
+        var projTasks = tasks.findByProjectId(id);
+        for (var t : projTasks) {
+            var tComments = comments.findByTaskId(t.getId());
+            comments.deleteAll(tComments);
+        }
+        tasks.deleteAll(projTasks);
         repo.delete(existing);
     }
 
     public List<Project> listAllForUser(String userId) {
         return repo.findAll().stream()
                 .filter(pr -> (pr.getMembers() != null && pr.getMembers().contains(userId)) || organizations.isAdmin(pr.getOrganizationId(), userId))
+                .toList();
+    }
+
+    public List<Project> listForOrgForUser(String orgId, String userId) {
+        return repo.findByOrganizationId(orgId).stream()
+                .filter(pr -> (pr.getMembers() != null && pr.getMembers().contains(userId)) || organizations.isAdmin(orgId, userId))
                 .toList();
     }
 
@@ -122,6 +140,12 @@ public class ProjectService {
 
     public void delete(String id) {
         if (!repo.existsById(id)) throw new NotFoundException("Project not found: " + id);
+        var projTasks = tasks.findByProjectId(id);
+        for (var t : projTasks) {
+            var tComments = comments.findByTaskId(t.getId());
+            comments.deleteAll(tComments);
+        }
+        tasks.deleteAll(projTasks);
         repo.deleteById(id);
     }
 

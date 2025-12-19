@@ -1,6 +1,6 @@
 const AUTH_SERVER = 'http://localhost:9000'
 const CLIENT_ID = 'altpro-web'
-const REDIRECT_URI = 'http://localhost:3000/callback'
+const REDIRECT_URI = `${window.location.origin}/callback`
 const SCOPE = 'openid api.read api.write'
 
 function base64urlencode(str: ArrayBuffer) {
@@ -22,6 +22,8 @@ export async function loginWithPkce() {
   url.searchParams.set('scope', SCOPE)
   url.searchParams.set('code_challenge', challenge)
   url.searchParams.set('code_challenge_method', 'S256')
+  url.searchParams.set('prompt', 'login')
+  url.searchParams.set('max_age', '0')
   window.location.href = url.toString()
 }
 
@@ -51,6 +53,11 @@ export function authHeader(): Record<string, string> {
 }
 
 export function logout() {
+  const idToken = localStorage.getItem('id_token') || ''
+  const redirect = `${window.location.origin}/`
   localStorage.clear()
-  window.location.href = `${AUTH_SERVER}/logout`
+  const url = new URL(`${AUTH_SERVER}/logout`)
+  if (idToken) url.searchParams.set('id_token_hint', idToken)
+  url.searchParams.set('post_logout_redirect_uri', redirect)
+  window.location.href = url.toString()
 }
