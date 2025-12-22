@@ -37,7 +37,7 @@ _Autorius: Tauras Giedraitis, IFF-2/4_
   - Diegimo aplinka: `Ubuntu VPS`
 
 ## 2. Sistemos architektūra
-- Diegimo diagrama (UML principu, English):
+- Diegimo diagrama:
 
 ```mermaid
 flowchart TD
@@ -79,56 +79,57 @@ _Dashboard — Wireframe_
 ![Dashboard Screen](images/screen-dashboard.png)
 _Dashboard — Realizacijos ekrano kopija_
 
-![Organizations Wireframe](images/wireframe-organizations.png)
-_Organizations — Wireframe_
-![Organizations Screen](images/screen-organizations.png)
-_Organizations — Realizacijos ekrano kopija_
-
-![Projects Wireframe](images/wireframe-projects.png)
-_Projects — Wireframe_
-![Projects Screen](images/screen-projects.png)
-_Projects — Realizacijos ekrano kopija_
-
-![Tasks Wireframe](images/wireframe-tasks.png)
-_Tasks — Wireframe_
-![Tasks Screen](images/screen-tasks.png)
-_Tasks — Realizacijos ekrano kopija_
+![Organization Create Wireframe](images/wireframe-organization-create.png)
+_Organization Create — Wireframe_
+![Organization Create Screen](images/screen-organization-create.png)
+_Organization Create — Realizacijos ekrano kopija_
 
 ![Organization Home Wireframe](images/wireframe-organization-home.png)
 _Organization Home — Wireframe_
 ![Organization Home Screen](images/screen-organization-home.png)
 _Organization Home — Realizacijos ekrano kopija_
 
-![Project Settings Wireframe](images/wireframe-project-settings.png)
-_Project Settings — Wireframe_
-![Project Settings Screen](images/screen-project-settings.png)
-_Project Settings — Realizacijos ekrano kopija_
-
 ![Organization Settings Wireframe](images/wireframe-organization-settings.png)
 _Organization Settings — Wireframe_
 ![Organization Settings Screen](images/screen-organization-settings.png)
 _Organization Settings — Realizacijos ekrano kopija_
 
-![Auto Login Wireframe](images/wireframe-auto-login.png)
-_Auto Login — Wireframe_
-![Auto Login Screen](images/screen-auto-login.png)
-_Auto Login — Realizacijos ekrano kopija_
+![Project Create Wireframe](images/wireframe-project-create.png)
+_Project Create — Wireframe_
+![Project Create Screen](images/screen-project-create.png)
+_Project Create — Realizacijos ekrano kopija_
+
+![Project Home Wireframe](images/wireframe-project-home.png)
+_Project Home — Wireframe_
+![Project Home Screen](images/screen-project-home.png)
+_Project Home — Realizacijos ekrano kopija_
+
+![Project Settings Wireframe](images/wireframe-project-settings.png)
+_Project Settings — Wireframe_
+![Project Settings Screen](images/screen-project-settings.png)
+_Project Settings — Realizacijos ekrano kopija_
+
+![Task Create Wireframe](images/wireframe-task-create.png)
+_Task Create — Wireframe_
+![Task Create Screen](images/screen-task-create.png)
+_Task Create — Realizacijos ekrano kopija_
+
+![Task Details Wireframe](images/wireframe-task-details.png)
+_Task Details — Wireframe_
+![Task Details Screen](images/screen-task-details.png)
+_Task Details — Realizacijos ekrano kopija_
 
 ## OpenAPI specifikacija
-
 OpenAPI specifikacijos failą (api-spec.yaml) galima rasti projekto repozitorijoje:
 `./api-spec.yaml`
-Pilna API specifikacija yra aprašyta OpenAPI 3.0.3 formate faile `altpro-api/openapi.yaml`.
 
 ### API pagrindai
-
 - **Base URL**: `http://localhost:8080` (development) / `https://api.altpro.com` (production)
 - **Autentifikacija**: Bearer token (JWT)
 - **Formatas**: JSON
 - **HTTP metodai**: GET, POST, PUT, DELETE
 
 ### Pagrindiniai endpoint'ai
-
 #### Organizacijos (`/api/orgs`)
 ```
 POST   /api/orgs              - Sukurti organizaciją
@@ -171,7 +172,6 @@ GET    /api/orgs/{orgId}/comments/task/{taskId}   - Gauti užduoties komentarus
 ```
 
 ### API naudojimo pavyzdžiai
-
 #### Organizacijos kūrimas
 ```bash
 POST /api/orgs
@@ -230,7 +230,6 @@ Content-Type: application/json
 ```
 
 ### Galimi atsakymų kodai
-
 - **200 OK** - Sėkmingas užklausa
 - **201 Created** - Resursas sukurtas
 - **204 No Content** - Resursas ištrintas
