@@ -31,7 +31,7 @@ Autorius: Tauras Giedraitis, IFF-2/4
     - Konfigūruojama per aplinkos kintamuosius (`MONGO_*`, `issuer-uri`)
 - Pasirinktų technologijų aprašymas:
   - Klientas: `React` + `TypeScript` + `Vite`
-  - API (Resource Server): `Spring Boot`, `Spring Security OAuth2 Resource Server`, `MongoDB`
+  - API (Resource Server): `Spring Boot`, `Spring Security OAuth2 Resource Server`, `MongoDB`, REST (JSON over HTTPS)
   - Autorizacija (Authorization Server): `Spring Boot`, `Spring Authorization Server`, `MongoDB`
   - Tarpinis sluoksnis: `Nginx` reverse proxy
   - Diegimo aplinka: `Ubuntu VPS`
@@ -48,17 +48,17 @@ flowchart TD
     subgraph Ubuntu_VPS["Ubuntu VPS Device"]
         Nginx["Nginx Reverse Proxy"]
         Auth["AltPro Auth Service\nSpring Boot (OAuth2 Authorization Server)"]
-        API["AltPro API Service\nSpring Boot (Resource Server)"]
+        API["AltPro API Service\nSpring Boot (Resource Server, REST JSON)"]
         MongoDB[("MongoDB Database")]
     end
 
-    Browser ---|"HTTPS — requests via Nginx"| Nginx
-    Nginx ---|"Proxy — routes /auth/* to AltPro Auth"| Auth
-    Nginx ---|"Proxy — routes /api/* to AltPro API"| API
+    Browser ---|"HTTPS — REST requests via Nginx"| Nginx
+    Nginx ---|"Proxy — routes /auth/* (OIDC) to AltPro Auth"| Auth
+    Nginx ---|"Proxy — routes /api/* (REST JSON) to AltPro API"| API
     Auth ---|"Stores users, clients, consents"| MongoDB
     API ---|"Stores organizations, projects, tasks, comments"| MongoDB
-    Browser ---|"OIDC — redirects for login/logout"| Auth
-    Browser ---|"Bearer JWT — calls resource API"| API
+    Browser ---|"OIDC — redirects for login/logout (Auth Code + PKCE)"| Auth
+    Browser ---|"Bearer JWT — REST calls to resource API"| API
 ```
 
 - Diagramos paaiškinimas:
@@ -67,50 +67,131 @@ flowchart TD
   - Naršyklė gauna OIDC identiteto žetoną, o prie API prisijungia su `Bearer` JWT.
 
 ## 3. Naudotojo sąsajos projektas
-- Žemiau pateikiama kiekvieno lango pora: pirma „wireframe“, po to atitinkama realizacijos ekrano kopija.
+- Žemiau pateikiama kiekvieno lango pora: pirma „wireframe“ (Mermaid diagrama), po to atitinkama realizacijos ekrano kopija.
 
-![Home Wireframe](images/wireframe-home.png)
-_Home — Wireframe_
+```mermaid
+flowchart TD
+  subgraph Home["Home"]
+    H1["Hero: Welcome to AltPro"]
+    CTA["Buttons: Login | Register"]
+    IMG["Illustration"]
+  end
+  H1 --> CTA
+  H1 --> IMG
+```
+_Home — Wireframe (Mermaid)_
 ![Home Screen](images/screen-home.png)
 _Home — Realizacijos ekrano kopija_
 
-![Dashboard Wireframe](images/wireframe-dashboard.png)
-_Dashboard — Wireframe_
+```mermaid
+flowchart TD
+  subgraph Dashboard["Dashboard"]
+    INV["Invitations list"]
+    ORG["Organizations list"]
+  end
+  INV --- ORG
+```
+_Dashboard — Wireframe (Mermaid)_
 ![Dashboard Screen](images/screen-dashboard.png)
 _Dashboard — Realizacijos ekrano kopija_
 
-![Organizations Wireframe](images/wireframe-organizations.png)
-_Organizations — Wireframe_
+```mermaid
+flowchart TD
+  subgraph Organizations["Organizations"]
+    SEL["Organization selector"]
+    CREATE["Create organization form"]
+  end
+  SEL --> CREATE
+```
+_Organizations — Wireframe (Mermaid)_
 ![Organizations Screen](images/screen-organizations.png)
 _Organizations — Realizacijos ekrano kopija_
 
-![Projects Wireframe](images/wireframe-projects.png)
-_Projects — Wireframe_
+```mermaid
+flowchart TD
+  subgraph Projects["Projects"]
+    ORGSEL["Organization selector"]
+    LIST["Projects list"]
+    CREATE["Create project form"]
+  end
+  ORGSEL --> LIST
+  LIST --> CREATE
+```
+_Projects — Wireframe (Mermaid)_
 ![Projects Screen](images/screen-projects.png)
 _Projects — Realizacijos ekrano kopija_
 
-![Tasks Wireframe](images/wireframe-tasks.png)
-_Tasks — Wireframe_
+```mermaid
+flowchart TD
+  subgraph Tasks["Tasks"]
+    ORGSEL["Organization selector"]
+    PROJSEL["Project selector"]
+    BOARD["Tasks list/board"]
+    FORM["Create/Edit task form"]
+    COMMS["Comments panel"]
+  end
+  ORGSEL --> PROJSEL
+  PROJSEL --> BOARD
+  BOARD --- FORM
+  BOARD --- COMMS
+```
+_Tasks — Wireframe (Mermaid)_
 ![Tasks Screen](images/screen-tasks.png)
 _Tasks — Realizacijos ekrano kopija_
 
-![Organization Home Wireframe](images/wireframe-organization-home.png)
-_Organization Home — Wireframe_
+```mermaid
+flowchart TD
+  subgraph OrgHome["Organization Home"]
+    HEADER["Organization header"]
+    MEMBERS["Members list"]
+    PROJECTS["Projects list"]
+    ACTIONS["Actions: Leave, Create Project"]
+  end
+  HEADER --> MEMBERS
+  HEADER --> PROJECTS
+  PROJECTS --> ACTIONS
+```
+_Organization Home — Wireframe (Mermaid)_
 ![Organization Home Screen](images/screen-organization-home.png)
 _Organization Home — Realizacijos ekrano kopija_
 
-![Project Settings Wireframe](images/wireframe-project-settings.png)
-_Project Settings — Wireframe_
+```mermaid
+flowchart TD
+  subgraph ProjectSettings["Project Settings"]
+    DETAILS["Project details form"]
+    MEMBERS["Members management"]
+    INVITE["Invite user panel"]
+  end
+  DETAILS --> MEMBERS
+  MEMBERS --> INVITE
+```
+_Project Settings — Wireframe (Mermaid)_
 ![Project Settings Screen](images/screen-project-settings.png)
 _Project Settings — Realizacijos ekrano kopija_
 
-![Organization Settings Wireframe](images/wireframe-organization-settings.png)
-_Organization Settings — Wireframe_
+```mermaid
+flowchart TD
+  subgraph OrgSettings["Organization Settings"]
+    DETAILS["Organization details form"]
+    INVITES["Invitations panel"]
+    MEMBERS["Members management"]
+  end
+  DETAILS --> INVITES
+  DETAILS --> MEMBERS
+```
+_Organization Settings — Wireframe (Mermaid)_
 ![Organization Settings Screen](images/screen-organization-settings.png)
 _Organization Settings — Realizacijos ekrano kopija_
 
-![Auto Login Wireframe](images/wireframe-auto-login.png)
-_Auto Login — Wireframe_
+```mermaid
+flowchart TD
+  subgraph AutoLogin["Auto Login"]
+    CARD["Auto-login card"]
+    STATUS["Status message"]
+  end
+  CARD --> STATUS
+```
+_Auto Login — Wireframe (Mermaid)_
 ![Auto Login Screen](images/screen-auto-login.png)
 _Auto Login — Realizacijos ekrano kopija_
 
