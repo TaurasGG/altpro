@@ -70,128 +70,170 @@ flowchart TD
 - Žemiau pateikiama kiekvieno lango pora: pirma „wireframe“ (Mermaid diagrama), po to atitinkama realizacijos ekrano kopija.
 
 ```mermaid
-flowchart TD
-  subgraph Home["Home"]
-    H1["Hero: Welcome to AltPro"]
-    CTA["Buttons: Login | Register"]
-    IMG["Illustration"]
+flowchart LR
+  classDef container stroke:#94a3b8,fill:#0b1220,stroke-width:2,color:#e5e7eb;
+  classDef component stroke:#94a3b8,fill:#0f172a,stroke-dasharray:3 3,color:#e5e7eb,stroke-width:1;
+  subgraph Page["Home (UI sketch)"]
+    direction LR
+    subgraph Left["Hero Card"]
+      HTitle["Welcome to AltPro"]
+      HButtons["Login | Register"]
+    end
+    subgraph Right["Illustration"]
+      HImage["Image"]
+    end
   end
-  H1 --> CTA
-  H1 --> IMG
+  class Page,Left,Right container
+  class HTitle,HButtons,HImage component
 ```
-_Home — Wireframe (Mermaid)_
+_Home — UI komponentų eskizas (Mermaid)_
 ![Home Screen](images/screen-home.png)
 _Home — Realizacijos ekrano kopija_
 
 ```mermaid
-flowchart TD
-  subgraph Dashboard["Dashboard"]
-    INV["Invitations list"]
-    ORG["Organizations list"]
+flowchart LR
+  classDef container stroke:#94a3b8,fill:#0b1220,stroke-width:2,color:#e5e7eb;
+  classDef component stroke:#94a3b8,fill:#0f172a,stroke-dasharray:3 3,color:#e5e7eb,stroke-width:1;
+  subgraph Page["Dashboard (UI sketch)"]
+    direction TB
+    Header["Title: Invitations & Organizations"]
+    subgraph Grid["Two columns"]
+      INV["Invitations list"]
+      ORG["Organizations list"]
+    end
   end
-  INV --- ORG
+  class Page,Grid container
+  class Header,INV,ORG component
 ```
-_Dashboard — Wireframe (Mermaid)_
+_Dashboard — UI komponentų eskizas (Mermaid)_
 ![Dashboard Screen](images/screen-dashboard.png)
 _Dashboard — Realizacijos ekrano kopija_
 
 ```mermaid
-flowchart TD
-  subgraph Organizations["Organizations"]
-    SEL["Organization selector"]
-    CREATE["Create organization form"]
+flowchart TB
+  classDef container stroke:#94a3b8,fill:#0b1220,stroke-width:2,color:#e5e7eb;
+  classDef component stroke:#94a3b8,fill:#0f172a,stroke-dasharray:3 3,color:#e5e7eb,stroke-width:1;
+  subgraph Page["Organizations (UI sketch)"]
+    Selector["Organization selector"]
+    CreateForm["Create organization form"]
   end
-  SEL --> CREATE
+  Selector --> CreateForm
+  class Page container
+  class Selector,CreateForm component
 ```
-_Organizations — Wireframe (Mermaid)_
+_Organizations — UI komponentų eskizas (Mermaid)_
 ![Organizations Screen](images/screen-organizations.png)
 _Organizations — Realizacijos ekrano kopija_
 
 ```mermaid
-flowchart TD
-  subgraph Projects["Projects"]
-    ORGSEL["Organization selector"]
-    LIST["Projects list"]
-    CREATE["Create project form"]
+flowchart TB
+  classDef container stroke:#94a3b8,fill:#0b1220,stroke-width:2,color:#e5e7eb;
+  classDef component stroke:#94a3b8,fill:#0f172a,stroke-dasharray:3 3,color:#e5e7eb,stroke-width:1;
+  subgraph Page["Projects (UI sketch)"]
+    OrgSel["Organization selector"]
+    ProjList["Projects list"]
+    ProjCreate["Create project form"]
   end
-  ORGSEL --> LIST
-  LIST --> CREATE
+  OrgSel --> ProjList
+  ProjList --> ProjCreate
+  class Page container
+  class OrgSel,ProjList,ProjCreate component
 ```
-_Projects — Wireframe (Mermaid)_
+_Projects — UI komponentų eskizas (Mermaid)_
 ![Projects Screen](images/screen-projects.png)
 _Projects — Realizacijos ekrano kopija_
 
 ```mermaid
-flowchart TD
-  subgraph Tasks["Tasks"]
-    ORGSEL["Organization selector"]
-    PROJSEL["Project selector"]
-    BOARD["Tasks list/board"]
-    FORM["Create/Edit task form"]
-    COMMS["Comments panel"]
+flowchart TB
+  classDef container stroke:#94a3b8,fill:#0b1220,stroke-width:2,color:#e5e7eb;
+  classDef component stroke:#94a3b8,fill:#0f172a,stroke-dasharray:3 3,color:#e5e7eb,stroke-width:1;
+  subgraph Page["Tasks (UI sketch)"]
+    OrgSel["Organization selector"]
+    ProjSel["Project selector"]
+    subgraph Main["Content area"]
+      Board["Tasks list / board"]
+      TaskForm["Create / Edit task form"]
+      Comments["Comments panel"]
+    end
   end
-  ORGSEL --> PROJSEL
-  PROJSEL --> BOARD
-  BOARD --- FORM
-  BOARD --- COMMS
+  OrgSel --> ProjSel
+  ProjSel --> Main
+  class Page,Main container
+  class OrgSel,ProjSel,Board,TaskForm,Comments component
 ```
-_Tasks — Wireframe (Mermaid)_
+_Tasks — UI komponentų eskizas (Mermaid)_
 ![Tasks Screen](images/screen-tasks.png)
 _Tasks — Realizacijos ekrano kopija_
 
 ```mermaid
-flowchart TD
-  subgraph OrgHome["Organization Home"]
-    HEADER["Organization header"]
-    MEMBERS["Members list"]
-    PROJECTS["Projects list"]
-    ACTIONS["Actions: Leave, Create Project"]
+flowchart TB
+  classDef container stroke:#94a3b8,fill:#0b1220,stroke-width:2,color:#e5e7eb;
+  classDef component stroke:#94a3b8,fill:#0f172a,stroke-dasharray:3 3,color:#e5e7eb,stroke-width:1;
+  subgraph Page["Organization Home (UI sketch)"]
+    Header["Organization header"]
+    Members["Members list"]
+    Projects["Projects list"]
+    Actions["Actions: Leave, Create Project"]
   end
-  HEADER --> MEMBERS
-  HEADER --> PROJECTS
-  PROJECTS --> ACTIONS
+  Header --> Members
+  Header --> Projects
+  Projects --> Actions
+  class Page container
+  class Header,Members,Projects,Actions component
 ```
-_Organization Home — Wireframe (Mermaid)_
+_Organization Home — UI komponentų eskizas (Mermaid)_
 ![Organization Home Screen](images/screen-organization-home.png)
 _Organization Home — Realizacijos ekrano kopija_
 
 ```mermaid
-flowchart TD
-  subgraph ProjectSettings["Project Settings"]
-    DETAILS["Project details form"]
-    MEMBERS["Members management"]
-    INVITE["Invite user panel"]
+flowchart TB
+  classDef container stroke:#94a3b8,fill:#0b1220,stroke-width:2,color:#e5e7eb;
+  classDef component stroke:#94a3b8,fill:#0f172a,stroke-dasharray:3 3,color:#e5e7eb,stroke-width:1;
+  subgraph Page["Project Settings (UI sketch)"]
+    Details["Project details form"]
+    Members["Members management"]
+    Invite["Invite user panel"]
   end
-  DETAILS --> MEMBERS
-  MEMBERS --> INVITE
+  Details --> Members
+  Members --> Invite
+  class Page container
+  class Details,Members,Invite component
 ```
-_Project Settings — Wireframe (Mermaid)_
+_Project Settings — UI komponentų eskizas (Mermaid)_
 ![Project Settings Screen](images/screen-project-settings.png)
 _Project Settings — Realizacijos ekrano kopija_
 
 ```mermaid
-flowchart TD
-  subgraph OrgSettings["Organization Settings"]
-    DETAILS["Organization details form"]
-    INVITES["Invitations panel"]
-    MEMBERS["Members management"]
+flowchart TB
+  classDef container stroke:#94a3b8,fill:#0b1220,stroke-width:2,color:#e5e7eb;
+  classDef component stroke:#94a3b8,fill:#0f172a,stroke-dasharray:3 3,color:#e5e7eb,stroke-width:1;
+  subgraph Page["Organization Settings (UI sketch)"]
+    Details["Organization details form"]
+    Invitations["Invitations panel"]
+    Members["Members management"]
   end
-  DETAILS --> INVITES
-  DETAILS --> MEMBERS
+  Details --> Invitations
+  Details --> Members
+  class Page container
+  class Details,Invitations,Members component
 ```
-_Organization Settings — Wireframe (Mermaid)_
+_Organization Settings — UI komponentų eskizas (Mermaid)_
 ![Organization Settings Screen](images/screen-organization-settings.png)
 _Organization Settings — Realizacijos ekrano kopija_
 
 ```mermaid
-flowchart TD
-  subgraph AutoLogin["Auto Login"]
-    CARD["Auto-login card"]
-    STATUS["Status message"]
+flowchart TB
+  classDef container stroke:#94a3b8,fill:#0b1220,stroke-width:2,color:#e5e7eb;
+  classDef component stroke:#94a3b8,fill:#0f172a,stroke-dasharray:3 3,color:#e5e7eb,stroke-width:1;
+  subgraph Page["Auto Login (UI sketch)"]
+    Card["Auto-login card"]
+    Status["Status message"]
   end
-  CARD --> STATUS
+  Card --> Status
+  class Page container
+  class Card,Status component
 ```
-_Auto Login — Wireframe (Mermaid)_
+_Auto Login — UI komponentų eskizas (Mermaid)_
 ![Auto Login Screen](images/screen-auto-login.png)
 _Auto Login — Realizacijos ekrano kopija_
 
