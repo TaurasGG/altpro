@@ -59,10 +59,8 @@ flowchart TD
     Browser ---|"Bearer JWT — calls resource API"| API
 ```
 
-<figure>
-  <img src="images/deployment-diagram.png" alt="Deployment Diagram — AltPro" />
-  <figcaption>Deployment Diagram — AltPro (English)</figcaption>
-</figure>
+![Deployment Diagram — AltPro (English)](images/deployment-diagram.png)
+_Deployment Diagram — AltPro (English)_
 
 - Diagramos paaiškinimas:
   - Klientas per `Nginx` jungiasi prie dviejų paslaugų: `AltPro Auth` (SSO) ir `AltPro API` (resursų serveris).
@@ -70,111 +68,102 @@ flowchart TD
   - Naršyklė gauna OIDC identiteto žetoną, o prie API prisijungia su `Bearer` JWT.
 
 ## 3. Naudotojo sąsajos projektas
-- Žemiau pateikiama kiekvieno lango pora: pirma „wireframe“, po to atitinkama realizacijos ekrano kopija. Į `images/` katalogą įkelkite `.png` failus tiksliai tokiais pavadinimais, ir jie automatiškai bus matomi.
+- Žemiau pateikiama kiekvieno lango pora: pirma „wireframe“, po to atitinkama realizacijos ekrano kopija.
 
-<figure>
-  <img src="images/wireframe-home.png" alt="Home Wireframe" />
-  <figcaption>Home — Wireframe</figcaption>
-</figure>
-<figure>
-  <img src="images/screen-home.png" alt="Home Screen" />
-  <figcaption>Home — Realizacijos ekrano kopija</figcaption>
-</figure>
+![Home Wireframe](images/wireframe-home.png)
+_Home — Wireframe_
+![Home Screen](images/screen-home.png)
+_Home — Realizacijos ekrano kopija_
 
-<figure>
-  <img src="images/wireframe-dashboard.png" alt="Dashboard Wireframe" />
-  <figcaption>Dashboard — Wireframe</figcaption>
-</figure>
-<figure>
-  <img src="images/screen-dashboard.png" alt="Dashboard Screen" />
-  <figcaption>Dashboard — Realizacijos ekrano kopija</figcaption>
-</figure>
+![Dashboard Wireframe](images/wireframe-dashboard.png)
+_Dashboard — Wireframe_
+![Dashboard Screen](images/screen-dashboard.png)
+_Dashboard — Realizacijos ekrano kopija_
 
-<figure>
-  <img src="images/wireframe-organizations.png" alt="Organizations Wireframe" />
-  <figcaption>Organizations — Wireframe</figcaption>
-</figure>
-<figure>
-  <img src="images/screen-organizations.png" alt="Organizations Screen" />
-  <figcaption>Organizations — Realizacijos ekrano kopija</figcaption>
-</figure>
+![Organizations Wireframe](images/wireframe-organizations.png)
+_Organizations — Wireframe_
+![Organizations Screen](images/screen-organizations.png)
+_Organizations — Realizacijos ekrano kopija_
 
-<figure>
-  <img src="images/wireframe-projects.png" alt="Projects Wireframe" />
-  <figcaption>Projects — Wireframe</figcaption>
-</figure>
-<figure>
-  <img src="images/screen-projects.png" alt="Projects Screen" />
-  <figcaption>Projects — Realizacijos ekrano kopija</figcaption>
-</figure>
+![Projects Wireframe](images/wireframe-projects.png)
+_Projects — Wireframe_
+![Projects Screen](images/screen-projects.png)
+_Projects — Realizacijos ekrano kopija_
 
-<figure>
-  <img src="images/wireframe-tasks.png" alt="Tasks Wireframe" />
-  <figcaption>Tasks — Wireframe</figcaption>
-</figure>
-<figure>
-  <img src="images/screen-tasks.png" alt="Tasks Screen" />
-  <figcaption>Tasks — Realizacijos ekrano kopija</figcaption>
-</figure>
+![Tasks Wireframe](images/wireframe-tasks.png)
+_Tasks — Wireframe_
+![Tasks Screen](images/screen-tasks.png)
+_Tasks — Realizacijos ekrano kopija_
 
-<figure>
-  <img src="images/wireframe-organization-home.png" alt="Organization Home Wireframe" />
-  <figcaption>Organization Home — Wireframe</figcaption>
-</figure>
-<figure>
-  <img src="images/screen-organization-home.png" alt="Organization Home Screen" />
-  <figcaption>Organization Home — Realizacijos ekrano kopija</figcaption>
-</figure>
+![Organization Home Wireframe](images/wireframe-organization-home.png)
+_Organization Home — Wireframe_
+![Organization Home Screen](images/screen-organization-home.png)
+_Organization Home — Realizacijos ekrano kopija_
 
-<figure>
-  <img src="images/wireframe-project-settings.png" alt="Project Settings Wireframe" />
-  <figcaption>Project Settings — Wireframe</figcaption>
-</figure>
-<figure>
-  <img src="images/screen-project-settings.png" alt="Project Settings Screen" />
-  <figcaption>Project Settings — Realizacijos ekrano kopija</figcaption>
-</figure>
+![Project Settings Wireframe](images/wireframe-project-settings.png)
+_Project Settings — Wireframe_
+![Project Settings Screen](images/screen-project-settings.png)
+_Project Settings — Realizacijos ekrano kopija_
 
-<figure>
-  <img src="images/wireframe-organization-settings.png" alt="Organization Settings Wireframe" />
-  <figcaption>Organization Settings — Wireframe</figcaption>
-</figure>
-<figure>
-  <img src="images/screen-organization-settings.png" alt="Organization Settings Screen" />
-  <figcaption>Organization Settings — Realizacijos ekrano kopija</figcaption>
-</figure>
+![Organization Settings Wireframe](images/wireframe-organization-settings.png)
+_Organization Settings — Wireframe_
+![Organization Settings Screen](images/screen-organization-settings.png)
+_Organization Settings — Realizacijos ekrano kopija_
 
-<figure>
-  <img src="images/wireframe-auth-callback.png" alt="Auth Callback Wireframe" />
-  <figcaption>Auth Callback — Wireframe</figcaption>
-</figure>
-<figure>
-  <img src="images/screen-auth-callback.png" alt="Auth Callback Screen" />
-  <figcaption>Auth Callback — Realizacijos ekrano kopija</figcaption>
-</figure>
+![Auth Callback Wireframe](images/wireframe-auth-callback.png)
+_Auth Callback — Wireframe_
+![Auth Callback Screen](images/screen-auth-callback.png)
+_Auth Callback — Realizacijos ekrano kopija_
 
-<figure>
-  <img src="images/wireframe-auto-login.png" alt="Auto Login Wireframe" />
-  <figcaption>Auto Login — Wireframe</figcaption>
-</figure>
-<figure>
-  <img src="images/screen-auto-login.png" alt="Auto Login Screen" />
-  <figcaption>Auto Login — Realizacijos ekrano kopija</figcaption>
-</figure>
+![Auto Login Wireframe](images/wireframe-auto-login.png)
+_Auto Login — Wireframe_
+![Auto Login Screen](images/screen-auto-login.png)
+_Auto Login — Realizacijos ekrano kopija_
 
-<figure>
-  <img src="images/wireframe-logout.png" alt="Logout Wireframe" />
-  <figcaption>Logout — Wireframe</figcaption>
-</figure>
-<figure>
-  <img src="images/screen-logout.png" alt="Logout Screen" />
-  <figcaption>Logout — Realizacijos ekrano kopija</figcaption>
-</figure>
+![Logout Wireframe](images/wireframe-logout.png)
+_Logout — Wireframe_
+![Logout Screen](images/screen-logout.png)
+_Logout — Realizacijos ekrano kopija_
 
-## 4. API specifikacija
-- Struktūriškai aprašyta OpenAPI formatu (atskiras failas, anglų k.): `api-spec.yaml`.
-- Kiekvienam API metodui pateikti galimi atsako kodai ir panaudojimo pavyzdžiai (užklausa, atsakymas).
-- Pastaba: specifikacija suderinta su esamu kliento naudojimu (`altpro-client/src`) ir serverio konfigūracija (`altpro-api`).
+## OpenAPI specifikacija
+
+OpenAPI specifikacijos failą (api-spec.yaml) galima rasti projekto repozitorijoje:
+`./api-spec.yaml`
+
+API dokumentacijos pavyzdys
+GET `/api/orgs` — Gauti visas organizacijas
+
+Responses:
+- 200 OK — Grąžina organizacijų sąrašą
+- 401 Unauthorized — Vartotojas neautentifikuotas
+- 403 Forbidden — Neturi prieigos teisių
+- 500 Internal Server Error — Serverio klaida
+
+Response Schema (Organization):
+
+```json
+{
+  "id": "org_123",
+  "name": "KTU Dev Club",
+  "description": "Student projects organization",
+  "createdAt": "2025-10-01T10:00:00Z",
+  "members": [
+    { "userId": "user1", "role": "ADMIN" },
+    { "userId": "user2", "role": "MEMBER" }
+  ]
+}
+```
+
+GET `/api/orgs/{id}` — Gauti vieną organizaciją
+
+Parameters:
+- `id` (path, required) — Organizacijos ID (string)
+
+Responses:
+- 200 OK — Grąžina organizacijos informaciją
+- 404 Not Found — Organizacija nerasta
+- 401 Unauthorized — Vartotojas neautentifikuotas
+- 403 Forbidden — Neturi prieigos teisių
 
 ## 5. Projekto išvados
 - Atskyrus autorizacijos serverį nuo resursų serverio, pasiekiamas saugus ir lankstus SSO.
