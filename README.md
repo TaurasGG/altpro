@@ -1,4 +1,5 @@
 # AltPro projekto ataskaita
+Autorius: Tauras Giedraitis, IFF-2/4
 
 ## 1. Sprendžiamo uždavinio aprašymas
 - Sistemos paskirtis:
@@ -22,6 +23,7 @@
   - Naudotojų rolės:
     - `ADMIN` (organizacijos administratorius): valdo narius, gali kurti/šalinti projektus, keisti nustatymus
     - `MEMBER` (organizacijos narys): gali kurti ir tvarkyti užduotis, komentuoti, dalyvauti projektuose
+    - `SVEČIAS` (neprisijungęs vartotojas): gali matyti tik namų puslapį, registruotis, prisijungti
   - Papildomi funkciniai aspektai:
     - OAuth2/OIDC autentifikacija (SSO), prie API prisijungiama su `Bearer` JWT
     - Įvesties validacija ir aiškūs klaidų atsakai
@@ -58,9 +60,6 @@ flowchart TD
     Browser ---|"OIDC — redirects for login/logout"| Auth
     Browser ---|"Bearer JWT — calls resource API"| API
 ```
-
-![Deployment Diagram — AltPro (English)](images/deployment-diagram.png)
-_Deployment Diagram — AltPro (English)_
 
 - Diagramos paaiškinimas:
   - Klientas per `Nginx` jungiasi prie dviejų paslaugų: `AltPro Auth` (SSO) ir `AltPro API` (resursų serveris).
@@ -110,20 +109,10 @@ _Organization Settings — Wireframe_
 ![Organization Settings Screen](images/screen-organization-settings.png)
 _Organization Settings — Realizacijos ekrano kopija_
 
-![Auth Callback Wireframe](images/wireframe-auth-callback.png)
-_Auth Callback — Wireframe_
-![Auth Callback Screen](images/screen-auth-callback.png)
-_Auth Callback — Realizacijos ekrano kopija_
-
 ![Auto Login Wireframe](images/wireframe-auto-login.png)
 _Auto Login — Wireframe_
 ![Auto Login Screen](images/screen-auto-login.png)
 _Auto Login — Realizacijos ekrano kopija_
-
-![Logout Wireframe](images/wireframe-logout.png)
-_Logout — Wireframe_
-![Logout Screen](images/screen-logout.png)
-_Logout — Realizacijos ekrano kopija_
 
 ## OpenAPI specifikacija
 
@@ -143,7 +132,6 @@ Response Schema (Organization):
 
 ```json
 {
-  "id": "org_123",
   "name": "KTU Dev Club",
   "description": "Student projects organization",
   "createdAt": "2025-10-01T10:00:00Z",
