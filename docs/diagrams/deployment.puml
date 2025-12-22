@@ -1,0 +1,41 @@
+@startuml
+title AltPro Deployment Diagram
+
+node "Internet" as internet
+node "Client" as client {
+  artifact "Web Browser" as browser
+}
+
+node "Frontend" as frontend {
+  artifact "React SPA" as react
+}
+
+node "Gateway" as gateway {
+  artifact "Nginx Reverse Proxy" as nginx
+}
+
+node "Backend" as backend {
+  component "AltPro API\nSpring Boot" as api
+}
+
+node "Auth Server" as auth {
+  component "Alternative Account\nAuth API" as authapi
+}
+
+database "MongoDB" as mongo
+
+internet --> browser
+browser --> react
+react --> nginx : HTTPS
+nginx --> api : HTTP (internal)
+api --> mongo : Driver
+api --> authapi : REST (validate user, lookup profiles)
+
+note right of api
+  API enforces scopes:
+  - SCOPE_api.read
+  - SCOPE_api.write
+  JWT is passed by SPA
+end note
+
+@enduml

@@ -1,0 +1,906 @@
+openapi: 3.0.3
+info:
+  title: AltPro API
+  version: v1
+  description: Project, Task and Collaboration API for AltPro
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+security:
+  - bearerAuth: []
+tags:
+  - name: Organizations
+  - name: Projects
+  - name: Tasks
+  - name: Comments
+  - name: Invitations
+  - name: Auth
+  - name: Misc
+paths:
+  /api/orgs:
+    get:
+      tags: [Organizations]
+      summary: List organizations for current user
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Organization'
+              examples:
+                sample:
+                  value:
+                    - id: org1
+                      name: My Org
+                      description: Example organization
+                      createdAt: '2025-01-01T10:00:00Z'
+                      members:
+                        - userId: user-123
+                          role: ADMIN
+    post:
+      tags: [Organizations]
+      summary: Create organization
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+            examples:
+              create:
+                value:
+                  name: New Org
+                  description: Team workspace
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/orgs/{id}:
+    get:
+      tags: [Organizations]
+      summary: Get organization by ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Organizations]
+      summary: Update organization
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Organizations]
+      summary: Delete organization
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '204':
+          description: No Content
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/orgs/{id}/members:
+    post:
+      tags: [Organizations]
+      summary: Add member to organization by username or email and role
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrgMemberRequest'
+            examples:
+              byUsername:
+                value: { username: "bob", role: "MEMBER" }
+              byEmail:
+                value: { email: "bob@example.com", role: "ADMIN" }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/orgs/{id}/members/{memberId}:
+    put:
+      tags: [Organizations]
+      summary: Update organization member role
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+        - in: path
+          name: memberId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrgMemberRequest'
+            examples:
+              promote:
+                value: { role: "ADMIN" }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Organizations]
+      summary: Remove organization member
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+        - in: path
+          name: memberId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/orgs/{orgId}/projects:
+    get:
+      tags: [Projects]
+      summary: List projects for organization (visible to user)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+    post:
+      tags: [Projects]
+      summary: Create project
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+            examples:
+              create:
+                value:
+                  organizationId: org1
+                  name: Website Redesign
+                  description: Improve landing page
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/orgs/{orgId}/projects/{id}:
+    get:
+      tags: [Projects]
+      summary: Get project by ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/orgs/{orgId}/projects/{id}/members:
+    post:
+      tags: [Projects]
+      summary: Add member to project by username or email
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberRequest'
+            examples:
+              byUsername:
+                value: { username: "alice" }
+              byEmail:
+                value: { email: "alice@example.com" }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    put:
+      tags: [Projects]
+      summary: Update project
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Projects]
+      summary: Delete project
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '204':
+          description: No Content
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/orgs/{orgId}/projects/{id}/members/{memberId}:
+    delete:
+      tags: [Projects]
+      summary: Remove member from project
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+        - in: path
+          name: memberId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/orgs/{orgId}/tasks:
+    get:
+      tags: [Tasks]
+      summary: List tasks visible to current user
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+    post:
+      tags: [Tasks]
+      summary: Create task
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+            examples:
+              create:
+                value:
+                  projectId: proj-1
+                  title: Design landing hero
+                  description: UX draft
+                  status: TODO
+                  priority: 2
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/orgs/{orgId}/tasks/{id}:
+    get:
+      tags: [Tasks]
+      summary: Get task by ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Tasks]
+      summary: Update task
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Tasks]
+      summary: Delete task
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '204':
+          description: No Content
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/orgs/{orgId}/tasks/project/{projectId}:
+    get:
+      tags: [Tasks]
+      summary: List tasks by project
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: projectId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+
+  /api/orgs/{orgId}/comments:
+    post:
+      tags: [Comments]
+      summary: Create comment for task
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+            examples:
+              create:
+                value:
+                  taskId: task-1
+                  text: Please align header with grid
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/orgs/{orgId}/comments/{id}:
+    get:
+      tags: [Comments]
+      summary: Get comment by ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Comments]
+      summary: Update comment
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Comments]
+      summary: Delete comment
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '204':
+          description: No Content
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/orgs/{orgId}/comments/task/{taskId}:
+    get:
+      tags: [Comments]
+      summary: List comments by task
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: taskId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+
+  /api/orgs/{orgId}/invitations:
+    post:
+      tags: [Invitations]
+      summary: Invite user to organization by username or email
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orgId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteRequest'
+            examples:
+              byUsername:
+                value:
+                  username: alice
+              byEmail:
+                value:
+                  email: alice@example.com
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/boards:
+    get:
+      tags: [Misc]
+      summary: Example boards endpoint (demo)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                sample:
+                  value: User user-123 can read boards
+
+  /auth/users/by-username/{username}:
+    get:
+      tags: [Auth]
+      summary: Find user by username
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /auth/users/by-email/{email}:
+    get:
+      tags: [Auth]
+      summary: Find user by email
+      parameters:
+        - in: path
+          name: email
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /auth/users/by-id/{id}:
+    get:
+      tags: [Auth]
+      summary: Find user by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+
+  schemas:
+    Organization:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        createdAt: { type: string, format: date-time }
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrgMember'
+      required: [name]
+
+    OrgMember:
+      type: object
+      properties:
+        userId: { type: string }
+        role:
+          $ref: '#/components/schemas/OrgRole'
+
+    OrgRole:
+      type: string
+      enum: [ADMIN, MEMBER]
+    OrgMemberRequest:
+      type: object
+      properties:
+        username: { type: string }
+        email: { type: string }
+        role:
+          $ref: '#/components/schemas/OrgRole'
+
+    Project:
+      type: object
+      properties:
+        id: { type: string }
+        organizationId: { type: string }
+        name: { type: string }
+        description: { type: string }
+        createdAt: { type: string, format: date-time }
+        members:
+          type: array
+          items:
+            type: string
+      required: [organizationId, name]
+
+    Task:
+      type: object
+      properties:
+        id: { type: string }
+        projectId: { type: string }
+        title: { type: string }
+        description: { type: string }
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        priority: { type: integer }
+        createdAt: { type: string, format: date-time }
+        assignee: { type: string }
+      required: [projectId, title, status]
+
+    TaskStatus:
+      type: string
+      enum: [TODO, IN_PROGRESS, DONE]
+
+    Comment:
+      type: object
+      properties:
+        id: { type: string }
+        taskId: { type: string }
+        author: { type: string }
+        text: { type: string }
+        createdAt: { type: string, format: date-time }
+      required: [taskId, text]
+
+    Invitation:
+      type: object
+      properties:
+        id: { type: string }
+        organizationId: { type: string }
+        inviterUserId: { type: string }
+        inviteeUsername: { type: string }
+        inviteeEmail: { type: string }
+        status:
+          type: string
+          enum: [PENDING, ACCEPTED, DECLINED]
+        createdAt: { type: string, format: date-time }
+
+    MemberRequest:
+      type: object
+      properties:
+        username: { type: string }
+        email: { type: string }
+
+    InviteRequest:
+      type: object
+      properties:
+        username: { type: string }
+        email: { type: string }
+
+    UserProfile:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string }
+        username: { type: string }
+        displayName: { type: string }
+
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+
+    ValidationError:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: string

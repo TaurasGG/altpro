@@ -1,0 +1,24 @@
+@startuml
+title AltPro UI Navigation (UML State Diagram)
+
+[*] --> Login
+
+state Login {
+  [*] --> LoginForm
+  LoginForm --> Authenticated : OAuth2 login success
+}
+
+Authenticated --> Organizations : View my organizations
+Organizations --> OrganizationDetail : Select organization
+OrganizationDetail --> Projects : Open projects list
+Projects --> ProjectDetail : Select project
+ProjectDetail --> TasksBoard : Open tasks board
+TasksBoard --> TaskDetail : Open task
+TaskDetail --> TasksBoard : Back to board
+OrganizationDetail --> Invitations : Manage invitations
+Invitations --> OrganizationDetail : Back to org
+
+Organizations --> [*] : Logout
+ProjectDetail --> [*] : Logout
+
+@enduml
