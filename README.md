@@ -1,5 +1,5 @@
 # AltPro projekto ataskaita
-Autorius: Tauras Giedraitis, IFF-2/4
+_Autorius: Tauras Giedraitis, IFF-2/4_
 
 ## 1. Sprendžiamo uždavinio aprašymas
 - Sistemos paskirtis:
@@ -118,40 +118,127 @@ _Auto Login — Realizacijos ekrano kopija_
 
 OpenAPI specifikacijos failą (api-spec.yaml) galima rasti projekto repozitorijoje:
 `./api-spec.yaml`
+Pilna API specifikacija yra aprašyta OpenAPI 3.0.3 formate faile `altpro-api/openapi.yaml`.
 
-API dokumentacijos pavyzdys
-GET `/api/orgs` — Gauti visas organizacijas
+### API pagrindai
 
-Responses:
-- 200 OK — Grąžina organizacijų sąrašą
-- 401 Unauthorized — Vartotojas neautentifikuotas
-- 403 Forbidden — Neturi prieigos teisių
-- 500 Internal Server Error — Serverio klaida
+- **Base URL**: `http://localhost:8080` (development) / `https://api.altpro.com` (production)
+- **Autentifikacija**: Bearer token (JWT)
+- **Formatas**: JSON
+- **HTTP metodai**: GET, POST, PUT, DELETE
 
-Response Schema (Organization):
+### Pagrindiniai endpoint'ai
 
+#### Organizacijos (`/api/orgs`)
+```
+POST   /api/orgs              - Sukurti organizaciją
+GET    /api/orgs              - Gauti vartotojo organizacijas
+GET    /api/orgs/{id}         - Gauti organizaciją pagal ID
+PUT    /api/orgs/{id}         - Atnaujinti organizaciją
+DELETE /api/orgs/{id}         - Ištrinti organizaciją
+POST   /api/orgs/{id}/members - Pridėti narį
+PUT    /api/orgs/{id}/members/{memberId} - Atnaujinti nario rolę
+DELETE /api/orgs/{id}/members/{memberId} - Pašalinti narį
+```
+
+#### Projektai (`/api/orgs/{orgId}/projects`)
+```
+POST   /api/orgs/{orgId}/projects        - Sukurti projektą
+GET    /api/orgs/{orgId}/projects        - Gauti organizacijos projektus
+GET    /api/orgs/{orgId}/projects/{id}   - Gauti projektą pagal ID
+PUT    /api/orgs/{orgId}/projects/{id}   - Atnaujinti projektą
+DELETE /api/orgs/{orgId}/projects/{id}   - Ištrinti projektą
+```
+
+#### Užduotys (`/api/orgs/{orgId}/tasks`)
+```
+POST   /api/orgs/{orgId}/tasks                    - Sukurti užduotį
+GET    /api/orgs/{orgId}/tasks                    - Gauti organizacijos užduotis
+GET    /api/orgs/{orgId}/tasks/{id}               - Gauti užduotį pagal ID
+PUT    /api/orgs/{orgId}/tasks/{id}               - Atnaujinti užduotį
+DELETE /api/orgs/{orgId}/tasks/{id}               - Ištrinti užduotį
+GET    /api/orgs/{orgId}/tasks/project/{projectId} - Gauti projekto užduotis
+```
+
+#### Komentarai (`/api/orgs/{orgId}/comments`)
+```
+POST   /api/orgs/{orgId}/comments                 - Sukurti komentarą
+GET    /api/orgs/{orgId}/comments                 - Gauti organizacijos komentarus
+GET    /api/orgs/{orgId}/comments/{id}            - Gauti komentarą pagal ID
+PUT    /api/orgs/{orgId}/comments/{id}            - Atnaujinti komentarą
+DELETE /api/orgs/{orgId}/comments/{id}            - Ištrinti komentarą
+GET    /api/orgs/{orgId}/comments/task/{taskId}   - Gauti užduoties komentarus
+```
+
+### API naudojimo pavyzdžiai
+
+#### Organizacijos kūrimas
+```bash
+POST /api/orgs
+Authorization: Bearer <jwt-token>
+Content-Type: application/json
+
+{
+  "name": "Mano Kompanija",
+  "description": "Projektų valdymo organizacija"
+}
+```
+
+**Atsakymas (201 Created)**:
 ```json
 {
-  "name": "KTU Dev Club",
-  "description": "Student projects organization",
-  "createdAt": "2025-10-01T10:00:00Z",
+  "id": "64f1a2b3c4d5e6f7g8h9i0j",
+  "name": "Mano Kompanija",
+  "description": "Projektų valdymo organizacija",
+  "createdAt": "2024-12-21T10:00:00Z",
   "members": [
-    { "userId": "user1", "role": "ADMIN" },
-    { "userId": "user2", "role": "MEMBER" }
+    {
+      "userId": "user123",
+      "role": "ADMIN"
+    }
   ]
 }
 ```
 
-GET `/api/orgs/{id}` — Gauti vieną organizaciją
+#### Užduoties kūrimas
+```bash
+POST /api/orgs/64f1a2b3c4d5e6f7g8h9i0j/tasks
+Authorization: Bearer <jwt-token>
+Content-Type: application/json
 
-Parameters:
-- `id` (path, required) — Organizacijos ID (string)
+{
+  "title": "Implementuoti vartotojo autentifikaciją",
+  "description": "Pridėti OAuth2 integraciją su JWT tokens",
+  "status": "TODO",
+  "priority": 4,
+  "assignee": "user456"
+}
+```
 
-Responses:
-- 200 OK — Grąžina organizacijos informaciją
-- 404 Not Found — Organizacija nerasta
-- 401 Unauthorized — Vartotojas neautentifikuotas
-- 403 Forbidden — Neturi prieigos teisių
+**Atsakymas (201 Created)**:
+```json
+{
+  "id": "64f1a2b3c4d5e6f7g8h9i0k",
+  "projectId": "64f1a2b3c4d5e6f7g8h9i0l",
+  "title": "Implementuoti vartotojo autentifikaciją",
+  "description": "Pridėti OAuth2 integraciją su JWT tokens",
+  "status": "TODO",
+  "priority": 4,
+  "createdAt": "2024-12-21T11:30:00Z",
+  "assignee": "user456"
+}
+```
+
+### Galimi atsakymų kodai
+
+- **200 OK** - Sėkmingas užklausa
+- **201 Created** - Resursas sukurtas
+- **204 No Content** - Resursas ištrintas
+- **400 Bad Request** - Klaidingi duomenys
+- **401 Unauthorized** - Neautorizuota užklausa
+- **403 Forbidden** - Nepakanka teisių
+- **404 Not Found** - Resursas nerastas
+- **500 Internal Server Error** - Serverio klaida
 
 ## 5. Projekto išvados
 - Atskyrus autorizacijos serverį nuo resursų serverio, pasiekiamas saugus ir lankstus SSO.
