@@ -31,7 +31,7 @@ _Autorius: Tauras Giedraitis, IFF-2/4_
     - Konfigūruojama per aplinkos kintamuosius (`MONGO_*`, `issuer-uri`)
 - Pasirinktų technologijų aprašymas:
   - Klientas: `React` + `TypeScript` + `Vite`
-  - API (Resource Server): `Spring Boot`, `Spring Security OAuth2 Resource Server`, `MongoDB`
+  - API (Resource Server): `Spring Boot`, `Spring Security OAuth2 Resource Server`, `MongoDB`, RESTful API (JSON over HTTPS)
   - Autorizacija (Authorization Server): `Spring Boot`, `Spring Authorization Server`, `MongoDB`
   - Tarpinis sluoksnis: `Nginx` reverse proxy
   - Diegimo aplinka: `Ubuntu VPS`
@@ -48,17 +48,17 @@ flowchart TD
     subgraph Ubuntu_VPS["Ubuntu VPS Device"]
         Nginx["Nginx Reverse Proxy"]
         Auth["AltPro Auth Service\nSpring Boot (OAuth2 Authorization Server)"]
-        API["AltPro API Service\nSpring Boot (Resource Server)"]
+        API["AltPro API Service\nSpring Boot (Resource Server, RESTful API)"]
         MongoDB[("MongoDB Database")]
     end
 
-    Browser ---|"HTTPS — requests via Nginx"| Nginx
+    Browser ---|"HTTPS — RESTful requests via Nginx"| Nginx
     Nginx ---|"Proxy — routes /auth/* to AltPro Auth"| Auth
-    Nginx ---|"Proxy — routes /api/* to AltPro API"| API
+    Nginx ---|"Proxy — routes /api/* (RESTful JSON) to AltPro API"| API
     Auth ---|"Stores users, clients, consents"| MongoDB
     API ---|"Stores organizations, projects, tasks, comments"| MongoDB
     Browser ---|"OIDC — redirects for login/logout"| Auth
-    Browser ---|"Bearer JWT — calls resource API"| API
+    Browser ---|"Bearer JWT — RESTful calls to resource API"| API
 ```
 
 - Diagramos paaiškinimas:
@@ -124,9 +124,9 @@ OpenAPI specifikacijos failą (api-spec.yaml) galima rasti projekto repozitorijo
 `./api-spec.yaml`
 
 ### API pagrindai
-- **Base URL**: `http://localhost:8080` (development) / `https://api.altpro.com` (production)
+- **Base URL**: `http://localhost:9001` (development) / `https://api.altpro.com` (production)
 - **Autentifikacija**: Bearer token (JWT)
-- **Formatas**: JSON
+- **Formatas**: JSON (RESTful)
 - **HTTP metodai**: GET, POST, PUT, DELETE
 
 ### Pagrindiniai endpoint'ai
@@ -240,8 +240,17 @@ Content-Type: application/json
 - **500 Internal Server Error** - Serverio klaida
 
 ## 5. Projekto išvados
-- Atskyrus autorizacijos serverį nuo resursų serverio, pasiekiamas saugus ir lankstus SSO.
-- Hierarchinis API dizainas (`/api/orgs/{orgId}/projects/...`) natūraliai atspindi domeno ryšius ir supaprastina teisių taikymą.
-- `MongoDB` tinka greitam prototipavimui ir dokumentiniams duomenims; esant poreikiui, galima keisti saugyklą.
-- `React + TypeScript + Vite` leidžia kurti greitą ir tipais saugų klientą.
-- `Nginx` centralizuoja srautą ir palengvina TLS, maršrutizavimą bei mastelį.
+### Pagrindiniai pasiekimai:
+- Klientas, API ir autorizacija veikia atskiruose serveriuose (per `Nginx`).
+- Įdiegta OAuth2/OIDC autentifikacija ir autorizacija su JWT (Access tokens, PKCE).
+- Sukurta RESTful API su pilnu CRUD funkcionalumu (organizacijos, projektai, užduotys, komentarai).
+- Hierarchiniai endpoint’ai atitinka ryšius (`/api/orgs/{orgId}/projects/...`).
+- Integruota `MongoDB` duomenų bazė ir validacija.
+- API dokumentuota su OpenAPI 3.0 (`api-spec.yaml`, suderinama su `springdoc`).
+
+### Panaudotos technologijos:
+- Frontend: React 18 + TypeScript + Vite
+- Backend (Resource Server): Spring Boot 3.5 + Spring Security + Spring Data MongoDB
+- Autorizacija: Spring Authorization Server (OAuth2/OIDC)
+- Duomenų bazė: MongoDB
+- API dokumentacija: OpenAPI 3.0 (springdoc UI)
